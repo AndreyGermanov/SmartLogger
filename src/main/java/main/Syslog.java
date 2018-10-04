@@ -86,6 +86,7 @@ public class Syslog {
      */
     Path getLogFilePath(LogLevel level) {
         String logPath = owner.getSyslogPath();
+        if (logPath == null) return null;
         switch (level) {
             case DEBUG:
                 return Paths.get(logPath,"debug.log");

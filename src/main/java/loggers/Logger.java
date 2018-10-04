@@ -32,7 +32,7 @@ public abstract class Logger implements ILogger,Cloneable, Syslog.Loggable {
     private Syslog syslog;
     /// Last record of data, written
     private HashMap<String,Object> lastRecord;
-    /// Should write dupclicate data (if current record is the same as previous (lastRecord)).
+    /// Should write duplicate data (if current record is the same as previous (lastRecord)).
     public boolean shouldWriteDuplicates = false;
 
     /**
