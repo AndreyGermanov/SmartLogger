@@ -12,8 +12,9 @@ repositories {
 dependencies {
     testCompile("junit", "junit", "4.12")
     implementation("com.google.code.gson:gson:2.8.5")
-    compile("ch.qos.logback:logback-classic:1.2.1")
     compile("net.objecthunter","exp4j","0.4.8")
+    compile("mysql", "mysql-connector-java", "8.0.12")
+    compile("com.orientechnologies","orientdb-jdbc","3.0.8")
 }
 
 configure<JavaPluginConvention> {

@@ -1,6 +1,5 @@
-package loggers.aggregators;
+package aggregators;
 
-import aggregators.SimpleFileDataAggregator;
 import org.junit.Test;
 
 import java.util.HashMap;

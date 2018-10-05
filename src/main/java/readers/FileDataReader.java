@@ -1,8 +1,7 @@
 package readers;
 
 import com.google.gson.Gson;
-import main.Syslog;
-
+import main.ISyslog;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,20 +14,20 @@ import java.util.stream.Collectors;
 /**
  * Class provide functions to get information from downloaded data folder.
  */
-public class FileDataReader {
+public class FileDataReader implements IDataReader {
 
     // Path of root directory
     private String filePath;
     // Cached list of file paths. Key of map is 'timestamp', value is full file path
     private NavigableMap<Long,Path> filesList = new TreeMap<>();
     // Instance of internal error logger used to log exceptions and other issues to file
-    private Syslog syslog;
+    private ISyslog syslog;
 
     /**
      * Class constructor
      * @param filePath Full path to root folder
      */
-    public FileDataReader(String filePath,Syslog syslog) {
+    public FileDataReader(String filePath, ISyslog syslog) {
         this.filePath = filePath;
         this.syslog = syslog;
     }
@@ -146,6 +145,7 @@ public class FileDataReader {
      * Returns Time range of data. Includes first date and last date
      * @return Range object with timestamp of first record and timestamp of last record
      */
+    @Override
     public DataRange getRange() {
         NavigableMap<Long,Path> source = getFilesList();
         if (source.size()==0) return new DataRange();
@@ -156,6 +156,7 @@ public class FileDataReader {
      * Returns statistical information about data: Date range and number of records
      * @return DataStats object with start timestamp, end timestamp and number of records
      */
+    @Override
     public DataStats getDataStats(boolean refreshCache) {
         return getDataStats(0L,0L,refreshCache);
     }
@@ -167,7 +168,8 @@ public class FileDataReader {
      * @param endDate End date
      * @return DataStats object with start timestamp, end timestamp and number of records
      */
-    public DataStats getDataStats(Long startDate,Long endDate,boolean refreshCache) {
+    @Override
+    public DataStats getDataStats(Long startDate, Long endDate, boolean refreshCache) {
         if (refreshCache) getFilesList(refreshCache);
         DataRange range = getRangeBounds(startDate,endDate);
         return new DataStats(range,getFilesList(startDate,endDate).size());
@@ -177,6 +179,7 @@ public class FileDataReader {
      * Method read data from all files and returns it as a HashMap, ordered by timestamp
      * @return HashMap with timestamp as key and data record (HashMap<String,Object>) as value
      */
+    @Override
     public NavigableMap<Long,HashMap<String,Object>> getData(boolean refreshCache) {
         DataRange range = getRange();
         return getData(range.startDate,range.endDate,refreshCache);
@@ -188,6 +191,7 @@ public class FileDataReader {
      * @param endDate End timestamp
      * @return HashMap with timestamp as key and data record (HashMap<String,Object>) as value
      */
+    @Override
     public NavigableMap<Long,HashMap<String,Object>> getData(Long startDate, Long endDate, boolean refreshCache) {
         NavigableMap<Long,HashMap<String,Object>> result = new TreeMap<>();
         DataStats stats = getDataStats(startDate,endDate,refreshCache);
@@ -227,7 +231,7 @@ public class FileDataReader {
     /**
      * Class which holds information about date range
      */
-    public class DataRange {
+    public static class DataRange {
         public Long startDate=0L;
         public Long endDate=0L;
         DataRange(Long startDate, Long endDate) {

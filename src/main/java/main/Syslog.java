@@ -12,22 +12,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Class which implements internal error and info logging
  */
-public class Syslog {
-
-    /**
-     * Interface which class must implement to be able to use this object to log messages
-     */
-    public interface Loggable {
-        String getName();
-        String getSyslogPath();
-    }
-
-    /**
-     * Possible log levels
-     */
-    public enum LogLevel {
-        DEBUG,INFO,WARNING,ERROR
-    }
+public class Syslog implements ISyslog {
 
     /**
      * Owning object
@@ -48,7 +33,8 @@ public class Syslog {
      * @param source: Link to source object, which caught exception
      * @param methodName: Name of method, in which exception caught
      */
-    public void logException(Exception e,Object source, String methodName) {
+    @Override
+    public void logException(Exception e, Object source, String methodName) {
         this.log(Syslog.LogLevel.ERROR,e.getMessage(),source.getClass().getName(),methodName);
     }
 
@@ -59,7 +45,8 @@ public class Syslog {
      * @param className: Name of class, which sent request to write message to log
      * @param methodName: Name of method, which sent request to write message to log
      */
-    public void log(LogLevel level,String message,String className, String methodName) {
+    @Override
+    public void log(LogLevel level, String message, String className, String methodName) {
         Path filePath = getLogFilePath(level);
         if (filePath == null) return;
         try {

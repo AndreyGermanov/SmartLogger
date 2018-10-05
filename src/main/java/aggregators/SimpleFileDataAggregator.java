@@ -1,11 +1,13 @@
 package aggregators;
 
 import com.google.gson.Gson;
+import main.ISyslog;
 import main.LoggerApplication;
 import main.Syslog;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import readers.FileDataReader;
+import readers.IDataReader;
 import utils.MathUtils;
 import java.io.BufferedWriter;
 import java.nio.file.Files;
@@ -41,7 +43,9 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     private String sourcePath = "";
 
     // Link to FileDataReader object, which will be used to work with source data files
-    private FileDataReader sourceDataReader;
+    private IDataReader sourceDataReader;
+
+    private IDataReader aggregatorDataReader;
 
     // Unique name of this aggregator
     private String name = "";
@@ -51,7 +55,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     private String filePath = "";
 
     // Link to internal logger, which used to write error, warning or information messages while aggregating data
-    private Syslog syslog;
+    private ISyslog syslog;
 
     /**
      * Class constructors
@@ -78,7 +82,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         this.fillDataGaps = (boolean)config.getOrDefault("fillDataGaps",this.fillDataGaps);
         this.aggregationPeriod = (int)config.getOrDefault("aggregationPeriod",this.aggregationPeriod);
         this.aggregatesPerRun = (int)config.getOrDefault("aggregatesPerRun",this.aggregatesPerRun);
-        this.syslog = new Syslog(this);
+        this.syslog = this.getSyslog();
         this.sourceDataReader = new FileDataReader(this.sourcePath,this.syslog);
     }
 
@@ -87,19 +91,26 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      * and stores aggregated data to destination folder
      */
     public void aggregate() {
-        String destinationPath = this.getAggregatorPath();
-        FileDataReader aggregatorDataReader = new FileDataReader(destinationPath,syslog);
-        FileDataReader.DataRange aggregatedDataRange = aggregatorDataReader.getRange();
+        FileDataReader.DataRange range = getAggregationRange();
+        Stream.iterate(range.startDate,(Long timestamp) -> timestamp+aggregationPeriod)
+                .limit(Math.round((range.endDate-range.startDate)/aggregationPeriod))
+                .parallel()
+                .forEach(this::aggregateInterval);
+    }
+
+    /**
+     * Method calculates time interval to aggregate data
+     * @return Range with startDate and endDate
+     */
+    FileDataReader.DataRange getAggregationRange() {
+        FileDataReader.DataRange aggregatedDataRange = this.getAggregatorDataReader().getRange();
         Long startDate = aggregatedDataRange.endDate;
         Long endDate = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
         if (this.aggregatesPerRun!=0) endDate = startDate + aggregatesPerRun*aggregationPeriod;
         FileDataReader.DataStats sourceDataRange = sourceDataReader.getDataStats(startDate,endDate,true);
         startDate = alignDate(Long.max(startDate,sourceDataRange.range.startDate));
         endDate = alignDate(Long.min(endDate,sourceDataRange.range.endDate));
-        Stream.iterate(startDate,(Long timestamp) -> timestamp+aggregationPeriod)
-                .limit(Math.round((endDate-startDate)/aggregationPeriod))
-                .parallel()
-                .forEach(this::aggregateInterval);
+        return IDataReader.getDataRange(startDate,endDate);
     }
 
     /**
@@ -126,9 +137,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             if (value != null) aggregate.put(fieldName,value);
         }
         if (aggregate.size() == 0) return;
-        aggregate.put("timestamp",startDate.toString());
-        aggregate.put("aggregatorId",this.getName());
-        aggregate.put("aggregationPeriod",this.aggregationPeriod);
+        aggregate = markRecord(startDate,aggregate);
         Path path = Paths.get(getRecordPath(aggregate));
         try {
             if (!Files.exists(path.getParent())) Files.createDirectories(path.getParent());
@@ -145,7 +154,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      * Method used to calculate aggregated value from data, collected in interval
      * @param fieldName: Name of field, for which calculate aggregated value
      * @param stats: Summarized interval data
-     * @return: Caclulated value or null in case of errors
+     * @return Calculated value or null in case of errors
      */
     Object getAggregatedValue(String fieldName, AggregateFieldStats stats) {
         if (stats == null) return null;
@@ -170,7 +179,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     /**
      * Method returns summarized data for each field from provided source data array
      * @param data: Source data array
-     * @return: Hashmap of statistical objects for each field.
+     * @return HashMap of statistical objects for each field.
      */
     HashMap<String,AggregateFieldStats> getAggregateStats(NavigableMap<Long,HashMap<String,Object>> data) {
         HashMap<String,AggregateFieldStats> result = new HashMap<>();
@@ -252,9 +261,47 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         return stats;
     }
 
+    /**
+     * Method used to add current aggregator identification fields to data record before writing it to
+     * destinaton folder
+     * @param timestamp timestamp of record
+     * @param record record to mark
+     * @return Marked record
+     */
+    HashMap<String,Object> markRecord(Long timestamp,HashMap<String,Object> record) {
+        record.put("timestamp",timestamp.toString());
+        record.put("aggregatorId",this.getName());
+        record.put("aggregationPeriod",this.aggregationPeriod);
+        return record;
+    }
+
     @Override
     public String getName() {
         return this.name;
+    }
+
+    public void setSourceDataReader(IDataReader sourceDataReader) {
+        this.sourceDataReader = sourceDataReader;
+    }
+
+    public void setAggregatorDataReader(IDataReader aggregatorDataReader) {
+        this.aggregatorDataReader = aggregatorDataReader;
+    }
+
+    public ISyslog getSyslog() {
+        if (this.syslog == null)
+            this.syslog = new Syslog(this);
+        return this.syslog;
+    }
+
+    public void setSyslog(ISyslog syslog) {
+        this.syslog = syslog;
+    }
+
+    public IDataReader getAggregatorDataReader() {
+        if (this.aggregatorDataReader == null)
+            this.aggregatorDataReader = new FileDataReader(this.getAggregatorPath(),syslog);
+        return this.aggregatorDataReader;
     }
 
     /**

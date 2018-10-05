@@ -1,6 +1,6 @@
 package loggers.downloaders;
 
-import main.Syslog;
+import main.ISyslog;
 
 /**
  * Base class for all data downloaders.
@@ -9,7 +9,7 @@ public abstract class Downloader implements IDownloader {
 
     /// During download process, object can experience probems and throw exceptions.
     /// This Syslog object used to write them to log file
-    Syslog syslog;
+    ISyslog syslog;
 
     /**
      * Main method, which downloader use to get content
@@ -21,5 +21,5 @@ public abstract class Downloader implements IDownloader {
      * Method used to set Syslog object for internal error logging
      * @param syslog Link to syslog instance
      */
-    public void setSyslog(Syslog syslog) { this.syslog = syslog; }
+    public void setSyslog(ISyslog syslog) { this.syslog = syslog; }
 }

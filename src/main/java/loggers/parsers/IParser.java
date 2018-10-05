@@ -1,7 +1,6 @@
 package loggers.parsers;
 
-import main.Syslog;
-
+import main.ISyslog;
 import java.util.HashMap;
 
 /**
@@ -10,5 +9,5 @@ import java.util.HashMap;
 public interface IParser {
     HashMap<String,?> parse();
     void setInputString(String inputString);
-    void setSyslog(Syslog syslog);
+    void setSyslog(ISyslog syslog);
 }

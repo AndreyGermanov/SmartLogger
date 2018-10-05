@@ -32,7 +32,7 @@ class YandexWeatherLoggerMoc extends YandexWeatherLogger {
 
 public class YandexWeatherLoggerTest {
 
-    private YandexWeatherLoggerMoc logger = new YandexWeatherLoggerMoc("yandex_weather_golubitskaya","golubitskaya");
+    private YandexWeatherLoggerMoc logger = new YandexWeatherLoggerMoc("yandex_weather_golubitskaya1","golubitskaya");
     private Gson gson = new Gson();
 
     @Test

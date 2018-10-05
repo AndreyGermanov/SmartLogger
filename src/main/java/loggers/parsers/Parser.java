@@ -1,6 +1,6 @@
 package loggers.parsers;
 
-import main.Syslog;
+import main.ISyslog;
 
 import java.util.HashMap;
 
@@ -18,7 +18,7 @@ public abstract class Parser implements IParser {
 
     /// During processing, parser can experience errors or throw exceptions. This is link to Syslog object,
     /// used to write this to log file
-    protected Syslog syslog;
+    protected ISyslog syslog;
 
 
     /**
@@ -39,7 +39,7 @@ public abstract class Parser implements IParser {
      * Used to manually set Syslog logger object
      * @param syslog
      */
-    public void setSyslog(Syslog syslog) { this.syslog = syslog; }
+    public void setSyslog(ISyslog syslog) { this.syslog = syslog; }
 
     /**
      * Returns current input string, which parser uses to work with

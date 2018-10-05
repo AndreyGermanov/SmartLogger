@@ -3,6 +3,7 @@ package loggers;
 import com.google.gson.Gson;
 import loggers.downloaders.IDownloader;
 import loggers.parsers.IParser;
+import main.ISyslog;
 import main.LoggerApplication;
 import main.Syslog;
 import java.io.BufferedWriter;
@@ -29,7 +30,7 @@ public abstract class Logger implements ILogger,Cloneable, Syslog.Loggable {
     /// Link to Data parser class instance
     IParser parser;
     /// Link to Syslog object, used to write messages and error exceptions to log file
-    private Syslog syslog;
+    private ISyslog syslog;
     /// Last record of data, written
     private HashMap<String,Object> lastRecord;
     /// Should write duplicate data (if current record is the same as previous (lastRecord)).
@@ -209,13 +210,13 @@ public abstract class Logger implements ILogger,Cloneable, Syslog.Loggable {
      * Used to get link to current syslog object, used to log messages about this logger
      * @return
      */
-    public Syslog getSyslog() { return this.syslog;}
+    public ISyslog getSyslog() { return this.syslog;}
 
     /**
      * Used to manually set instance of Syslog object
      * @param syslog
      */
-    public void setSyslog(Syslog syslog) {
+    public void setSyslog(ISyslog syslog) {
         this.syslog = syslog;
     }
 
