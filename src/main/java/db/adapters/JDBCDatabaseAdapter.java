@@ -66,4 +66,19 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
         if (fieldString.isEmpty() || idValue == null) return "";
         return "UPDATE "+collectionName+" SET "+fieldString+" WHERE id="+idValue;
     }
+
+    String formatFieldValueForSQL(String collectionName,String fieldName,Object value) {
+        if (!isValidFieldConfig(collectionName,fieldName)) return null;
+        if (value == null) return null;
+        String type = getFieldConfigValue(collectionName,fieldName,"type").toString();
+        switch (type) {
+            case "decimal":
+                return value.toString();
+            case "integer":
+                return value.toString();
+            case "string":
+                return "'"+value.toString()+"'";
+        }
+        return null;
+    }
 }

@@ -18,7 +18,6 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
     public void configure(HashMap<String,Object> config) {
         super.configure(config);
         if (config == null) return;
-        this.name = config.getOrDefault("name","").toString();
         this.host = config.getOrDefault("host","").toString();
         this.port = config.getOrDefault("port","").toString();
         this.username = config.getOrDefault("username","").toString();

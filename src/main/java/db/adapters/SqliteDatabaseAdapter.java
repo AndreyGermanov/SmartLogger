@@ -13,7 +13,6 @@ public class SqliteDatabaseAdapter extends JDBCDatabaseAdapter {
     public void configure(HashMap<String,Object> config) {
         super.configure(config);
         if (config == null) return;
-        this.name = config.getOrDefault("name","").toString();
         this.path = config.getOrDefault("path","").toString();
     }
 

@@ -4,8 +4,6 @@ import config.ConfigManager;
 import main.ISyslog;
 import main.LoggerApplication;
 import main.Syslog;
-
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,12 +26,16 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
                 break;
             case "orientdb":
                 result = new OrientDBDatabaseAdapter();
+                break;
+            case "mongodb":
+                result = new MongoDatabaseAdapter();
         }
         if (result != null) result.configure(config);
         return result;
     }
 
     public void configure(HashMap<String,Object> config) {
+        this.name = config.getOrDefault("name","").toString();
         this.collections = (HashMap<String,Object>)config.getOrDefault("collections",new HashMap<>());
         this.syslog = new Syslog(this);
     }
@@ -47,21 +49,6 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
     }
 
     abstract Integer processUpdateQuery(String collectionName, ArrayList<HashMap<String,Object>> data, boolean isNew);
-
-    String formatFieldValueForSQL(String collectionName,String fieldName,Object value) {
-        if (!isValidFieldConfig(collectionName,fieldName)) return null;
-        if (value == null) return null;
-        String type = getFieldConfigValue(collectionName,fieldName,"type").toString();
-        switch (type) {
-            case "decimal":
-                return value.toString();
-            case "integer":
-                return value.toString();
-            case "string":
-                return "'"+value.toString()+"'";
-        }
-        return null;
-    }
 
     boolean isValidFieldConfig(String collectionName,String fieldName) {
         if (getFieldConfigValue(collectionName,fieldName,"name")==null) return false;

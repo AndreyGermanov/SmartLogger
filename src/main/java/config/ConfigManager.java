@@ -13,10 +13,10 @@ public class ConfigManager {
         HashMap<String,HashMap<String,Object>> result = new HashMap<>();
         HashMap<String,Object> mysql_local = new HashMap<>();
         mysql_local.put("name","mysql_local");
-        mysql_local.put("type","mysql");
+        mysql_local.put("type","mongodb");
         mysql_local.put("path","/home/andrey/logger/weather");
         mysql_local.put("host","127.0.0.1");
-        mysql_local.put("port","3306");
+        mysql_local.put("port","27017");
         mysql_local.put("username","root");
         mysql_local.put("password","111111");
         mysql_local.put("database","yandex_weather");
