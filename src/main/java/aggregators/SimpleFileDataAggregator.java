@@ -162,13 +162,14 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         if (fieldConf == null) return null;
         int precision = (int)fieldConf.getOrDefault("precision",2);
         Object result = null;
-        switch (fieldConf.getOrDefault("aggregate_function","average").toString()) {
+        switch (fieldConf.getOrDefault("aggregate_function","constant").toString()) {
             case "count": result = stats.count;break;
             case "sum": result = stats.sum;break;
             case "min": result = stats.min;break;
             case "max": result = stats.max;break;
             case "first": result = stats.first;break;
             case "last": result = stats.last;break;
+            case "constant": result = stats.first;break;
             case "average":
                 if (stats.count == 0) return null;
                 result = stats.sum / stats.count;
@@ -208,6 +209,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             return evaluateExpression(fieldConf.get("expression").toString(),record);
         else if (fieldConf.containsKey("field") && !fieldConf.get("field").toString().isEmpty())
             return record.get(fieldName);
+        else if (fieldConf.containsKey("constant") && !fieldConf.get("constant").toString().isEmpty())
+            return evaluateConstant(fieldConf.get("constant").toString());
         else
             return null;
     }
@@ -233,6 +236,22 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             syslog.log(Syslog.LogLevel.WARNING,"Could not process expression '"+expression+"' for record '"+
             record+"'. Exception thrown: "+e.getMessage()+".",this.getClass().getName(),"evaluateExpression");
             return null;
+        }
+    }
+
+    /**
+     * Method evaluates value of type "constant" for field
+     * @param constantValue
+     * @return
+     */
+    Object evaluateConstant(String constantValue) {
+        switch (constantValue) {
+            case "$aggregatorId":
+                return this.getName();
+            case "$aggregationPeriod":
+                return this.aggregationPeriod;
+            default:
+                return constantValue;
         }
     }
 
@@ -270,8 +289,6 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      */
     HashMap<String,Object> markRecord(Long timestamp,HashMap<String,Object> record) {
         record.put("timestamp",timestamp.toString());
-        record.put("aggregatorId",this.getName());
-        record.put("aggregationPeriod",this.aggregationPeriod);
         return record;
     }
 
