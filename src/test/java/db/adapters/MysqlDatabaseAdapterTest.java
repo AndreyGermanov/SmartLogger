@@ -1,5 +1,6 @@
 package db.adapters;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class MysqlDatabaseAdapterTest {
         rows.add(row1);
         rows.add(row2);
         Integer result = adapter.insert("weather",rows);
-        System.out.println(result);
+        Assert.assertNotNull("Should return number of rows affected",result);
 
     }
 }

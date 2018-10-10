@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -135,7 +136,7 @@ public class FileDataReader implements IDataReader {
         NavigableMap<Long,Path> source = getFilesList();
         if (source.size()==0) return 0L;
         if (source.containsKey(value)) return value;
-        Long result = findHigher ? source.firstKey() : source.lastKey();
+        Long result = findHigher ? value < source.firstKey() ? source.firstKey() : value : value > source.lastKey() ? source.lastKey() : value ;
         Long closeKey = findHigher ? source.higherKey(value) : source.lowerKey(value);
         if (closeKey != null) result = closeKey;
         return result;
@@ -200,12 +201,20 @@ public class FileDataReader implements IDataReader {
             HashMap<String,Object> record = getDataRecord(entry.getValue());
             if (record == null) return;
             Long timestamp = new Long(record.get("timestamp").toString());
-            record.remove("timestamp");
             synchronized (this) {
                 result.put(timestamp, record);
             }
         });
         return result;
+    }
+
+    /**
+     * Method read data from files inside specified date range and returns it as a HashMap, ordered by timestamp
+     * @param startDate Start timestamp
+     * @return HashMap with timestamp as key and data record (HashMap<String,Object>) as value
+     */
+    public NavigableMap<Long,HashMap<String,Object>> getData(Long startDate,boolean refreshCache) {
+        return getData(startDate,Instant.now().getEpochSecond(),refreshCache);
     }
 
     /**

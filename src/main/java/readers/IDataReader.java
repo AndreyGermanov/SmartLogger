@@ -14,5 +14,6 @@ public interface IDataReader {
     FileDataReader.DataStats getDataStats(boolean refreshCache);
     FileDataReader.DataStats getDataStats(Long startDate, Long endDate, boolean refreshCache);
     NavigableMap<Long,HashMap<String,Object>> getData(boolean refreshCache);
+    NavigableMap<Long,HashMap<String,Object>> getData(Long startDate,boolean refreshCache);
     NavigableMap<Long,HashMap<String,Object>> getData(Long startDate, Long endDate, boolean refreshCache);
 }
