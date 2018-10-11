@@ -1,0 +1,11 @@
+{
+  "name":"mysql_local",
+  "type":"mysql",
+  "path":"/home/andrey/logger/weather",
+  "host":"127.0.0.1",
+  "port":"3306",
+  "username":"root",
+  "password":"111111",
+  "database":"yandex_weather",
+  "collections": "#include collections.json"
+}

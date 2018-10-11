@@ -1,0 +1,22 @@
+{
+  "temperature_avg": {
+    "name": "temperature_avg",
+    "average_function": "average",
+    "expression": "temperature"
+  },
+  "temperature_sum": {
+    "name": "temperature_sum",
+    "aggregate_function": "sum",
+    "expression": "temperature"
+  },
+  "temperature_count": {
+    "name": "temperature_count",
+    "aggregate_function": "count",
+    "expression": "temperature"
+  },
+  "temperature_avg_f": {
+    "name": "temperature_avg_f",
+    "aggregate_function": "average",
+    "expression": "temperature*1.8+32"
+  }
+}

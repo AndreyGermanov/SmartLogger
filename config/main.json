@@ -1,0 +1,6 @@
+{
+  "loggers": "#include loggers/loggers.json",
+  "aggregators": "#include aggregators/aggregators.json",
+  "adapters": "#include adapters/adapters.json",
+  "persisters": "#include persisters/persisters.json"
+}

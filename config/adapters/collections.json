@@ -1,0 +1,34 @@
+{
+  "weather": {
+    "name" :"weather",
+    "idField" :"id",
+    "fields": {
+      "id": {
+        "name": "id",
+        "type": "integer"
+      },
+      "timestamp": {
+        "name": "timestamp",
+        "type": "integer"
+      },
+      "temperature_avg": {
+        "name": "temperature_avg",
+        "type": "decimal",
+        "length": 15,
+        "precision": 2
+      },
+      "temperature_sum": {
+        "name": "temperature_sum",
+        "type": "decimal",
+        "length": 15,
+        "precision": 2
+      },
+      "temperature_avg_f": {
+        "name": "temperature_avg_f",
+        "type": "decimal",
+        "length": 15,
+        "precision": 2
+      }
+    }
+  }
+}

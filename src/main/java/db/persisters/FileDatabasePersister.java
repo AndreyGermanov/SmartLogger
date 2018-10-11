@@ -1,5 +1,6 @@
 package db.persisters;
 
+import com.google.gson.Gson;
 import config.ConfigManager;
 import db.adapters.DatabaseAdapter;
 import db.adapters.IDatabaseAdapter;
@@ -19,30 +20,61 @@ import java.util.stream.Collectors;
 
 public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggable {
 
+    // Unique name of persister
     private String name = "";
+    // Link to adapter, which provides database access settings
     private IDatabaseAdapter databaseAdapter;
+    // Path to folder with aggregated source data
     private String sourcePath = "";
+    // Name of destination collection (table) in database
     private String collectionName = "";
+    // Should this persister write duplicate rows
     private boolean writeDuplicates = false;
+    // Should this persister fill gaps in data using values from previous rows
     private boolean fillDataGaps = false;
+    // Link to data reader instance, which used to manage data reading process from source folder
     private IDataReader sourceDataReader;
+    // How many rows should this persister write to database per single run. If 0, then will process all data in
+    // source folder
     private int rowsPerRun = 0;
+    // Link to system logger, used to store system error messages
     private ISyslog syslog;
+    // Path to folder, in which this persister write temporary status information, like last processed row
     private String statusPath = "";
-    private Long lastWriteTimestamp=0L;
+    // Last processed record
+    private HashMap<String,Object> lastRecord;
 
+    /**
+     * Class constructor
+     * @param config - Configuration object
+     */
     FileDatabasePersister(HashMap<String,Object> config) {
         this.configure(config);
     }
 
+    /**
+     * Class constructor
+     * @param name - Name of persister
+     * @param sourcePath - Path to source data folder
+     * @param databaseAdapter - Name of database adapter in configuration
+     */
     FileDatabasePersister(String name,String sourcePath,String databaseAdapter) {
         this.configure(DataMap.create("name",name,"sourcePath",sourcePath,"databaseAdapter",databaseAdapter));
     }
 
+    /**
+     * Class constructor
+     * @param name - Name of persister
+     */
     FileDatabasePersister(String name) {
         this.configure(ConfigManager.getInstance().getDatabasePersister(name));
     }
 
+    /**
+     * Method used to load settings of this persister from configuration object, provided by configuration manager
+     * from configuration file
+     * @param config - Configuration object
+     */
     @Override
     public void configure(HashMap<String, Object> config) {
         if (config==null) return;
@@ -51,78 +83,110 @@ public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggab
         collectionName = config.getOrDefault("collectionName",collectionName).toString();
         writeDuplicates = Boolean.parseBoolean(config.getOrDefault("writeDuplicates",writeDuplicates).toString());
         fillDataGaps = Boolean.parseBoolean(config.getOrDefault("fillDataGaps",fillDataGaps).toString());
-        rowsPerRun = Integer.parseInt(config.getOrDefault("rowsPerRun",0).toString());
+        rowsPerRun = Double.valueOf(config.getOrDefault("rowsPerRun",0).toString()).intValue();
         statusPath = config.getOrDefault("statusPath",statusPath).toString();
         if (config.containsKey("databaseAdapter")) databaseAdapter = DatabaseAdapter.get(config.get("databaseAdapter").toString());
         if (syslog == null) syslog = new Syslog(this);
         sourceDataReader = new FileDataReader(sourcePath,syslog);
     }
 
+    /**
+     * Entry point method. Used to start process of writing source data to database
+     * @return
+     */
     @Override
     public Integer persist() {
-        lastWriteTimestamp = 0L;
+        lastRecord = new HashMap<>();
         ArrayList<HashMap<String,Object>> data = prepareData();
         if (data == null || data.size()==0) return null;
         Integer insertedRowsCount = databaseAdapter.insert(collectionName,data);
         if (insertedRowsCount==null || insertedRowsCount==0) return null;
-        writeLastWriteTimestamp();
+        writeLastRecord();
         return insertedRowsCount;
     }
 
+    /**
+     * Method used to read source data and transform it to format, ready for data adapter
+     * to write to database
+     * @return
+     */
     private ArrayList<HashMap<String,Object>> prepareData() {
         if (sourceDataReader == null) return null;
-        Long startDate = readLastWriteTimestamp();
+        lastRecord = readLastRecord();
+        Long startDate = 0L;
+        if (lastRecord != null) startDate = Long.parseLong(lastRecord.get("timestamp").toString());
         if (startDate > 0) startDate +=1;
         NavigableMap<Long,HashMap<String,Object>> data = sourceDataReader.getData(startDate,true);
         return (data == null || data.size()==0) ? null :
         (ArrayList<HashMap<String,Object>>)data.entrySet().stream().map(Map.Entry::getValue)
-                .collect(Collectors.toMap(this::createUniqueRecordIndex,
-                        record -> record,(i1,i2) -> i1)).entrySet().stream().map(Map.Entry::getValue)
                 .sorted(Comparator.comparingInt(s -> Integer.parseInt(s.get("timestamp").toString())))
+                .filter(record -> !isDuplicateRecord(record))
                 .limit(rowsPerRun > 0 ? rowsPerRun : data.size())
-                .peek(record -> setLastWriteTimestamp(record.get("timestamp").toString()))
+                .peek(this::setLastRecord)
                 .collect(Collectors.toList());
     }
 
-    private String createUniqueRecordIndex(HashMap<String,Object> record) {
-        Predicate<String> condition = !writeDuplicates ? key -> !key.equals("timestamp") : key -> true;
-        return record.keySet().stream().filter(condition).reduce((s,key) -> s+"_"+record.get(key).toString()).orElse("");
+    /**
+     * Method used to check if provided record contains the same data as last processed record
+     * @param record Record to check
+     * @return True if records are equal or false otherwise
+     */
+    private boolean isDuplicateRecord(HashMap<String,Object> record) {
+        if (record == null || lastRecord == null) return false;
+        if (record.size() != lastRecord.size()) return false;
+        for (String key: record.keySet()) {
+            if (!lastRecord.containsKey(key)) return false;
+            if (key.equals("timestamp")) continue;
+            if (!record.get(key).toString().equals(lastRecord.get(key).toString())) return false;
+        }
+        return true;
     }
 
-    private void setLastWriteTimestamp(String timestamp) {
-        lastWriteTimestamp = Long.parseLong(timestamp);
-    }
+    /**
+     * Method used to update last rocessed record in temporary variable
+     * @param record - Record to set
+     */
+    private void setLastRecord(HashMap<String,Object> record) { lastRecord = (HashMap<String,Object>)record.clone();};
 
-    private Long readLastWriteTimestamp() {
-        Path statusPath = Paths.get(this.getStatusPath()+"/last_timestamp");
-        if (!Files.exists(statusPath)) return 0L;
+    /**
+     * Method used to read last written record from file
+     * @return Record
+     */
+    private HashMap<String,Object> readLastRecord() {
+        Path statusPath = Paths.get(this.getStatusPath()+"/last_record");
+        if (!Files.exists(statusPath)) return null;
         try {
+            Gson gson = new Gson();
             BufferedReader reader = Files.newBufferedReader(statusPath);
-            Long result = Long.valueOf(reader.readLine());
+            HashMap<String,Object> result = gson.fromJson(reader.readLine(),HashMap.class);
             reader.close();
             return result;
         } catch (IOException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not read timestamp from '"+statusPath.toString()+"' file",
-                    this.getClass().getName(),"getLastWriteTimestamp");
-        } catch (NumberFormatException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not parse timestamp value from '"+statusPath.toString()+"' file.",
-                    this.getClass().getName(),"getLastWriteTimestamp");
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not read last record from '"+statusPath.toString()+"' file",
+                    this.getClass().getName(),"readLastRecord");
+        } catch (Exception e) {
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not parse last record value from '"+statusPath.toString()+"' file.",
+                    this.getClass().getName(),"readLastRecord");
         }
-        return 0L;
+        return null;
     }
 
-    private void writeLastWriteTimestamp() {
-        if (lastWriteTimestamp == 0) return;
-        Path statusPath = Paths.get(this.getStatusPath()+"/last_timestamp");
+    /**
+     * Method used to write last written record to file as JSON object
+     */
+    private void writeLastRecord() {
+        if (lastRecord == null) return;
+        Path statusPath = Paths.get(this.getStatusPath()+"/last_record");
         try {
+            Gson gson = new Gson();
             if (!Files.exists(statusPath.getParent())) Files.createDirectories(statusPath.getParent());
             BufferedWriter writer = Files.newBufferedWriter(statusPath,StandardOpenOption.CREATE);
-            writer.write(lastWriteTimestamp.toString());
+            writer.write(gson.toJson(lastRecord));
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not write last write timestamp '"+lastWriteTimestamp.toString()+
-                    "' to file '"+statusPath.toString()+"'",this.getClass().getName(),"writeLastWriteTimestamp");
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not write last record '"+lastRecord.toString()+
+                    "' to file '"+statusPath.toString()+"'",this.getClass().getName(),"writeLastRecord");
         }
     }
 
@@ -140,6 +204,11 @@ public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggab
         this.syslog = syslog;
     }
 
+    /**
+     * Method returns path to status folder, which persister used to write status files (as timestamp of last
+     * written record)
+     * @return Full path
+     */
     private String getStatusPath() {
         if (statusPath.isEmpty()) return LoggerApplication.getInstance().getCachePath()+"/persisters/"+this.getName()+"/";
         return statusPath;

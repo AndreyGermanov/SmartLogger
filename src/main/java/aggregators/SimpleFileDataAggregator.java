@@ -1,6 +1,7 @@
 package aggregators;
 
 import com.google.gson.Gson;
+import config.ConfigManager;
 import main.ISyslog;
 import main.LoggerApplication;
 import main.Syslog;
@@ -71,17 +72,22 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         this.configure(config);
     }
 
+    public SimpleFileDataAggregator(String name) {
+        this.configure(ConfigManager.getInstance().getDataAggregator(name));
+    }
+
     /**
      * Method used to apply configuration to object.
      * @param config: Configuration object
      */
     public void configure(HashMap<String,Object> config) {
+        if (config == null) return;
         this.name = config.getOrDefault("name",this.name).toString();
         this.sourcePath = config.getOrDefault("sourcePath",this.sourcePath).toString();
         this.fieldDefs = (HashMap<String,HashMap<String,Object>>)config.getOrDefault("fields",this.fieldDefs);
         this.fillDataGaps = (boolean)config.getOrDefault("fillDataGaps",this.fillDataGaps);
-        this.aggregationPeriod = (int)config.getOrDefault("aggregationPeriod",this.aggregationPeriod);
-        this.aggregatesPerRun = (int)config.getOrDefault("aggregatesPerRun",this.aggregatesPerRun);
+        this.aggregationPeriod = Double.valueOf(config.getOrDefault("aggregationPeriod",this.aggregationPeriod).toString()).intValue();
+        this.aggregatesPerRun = Double.valueOf(config.getOrDefault("aggregatesPerRun",this.aggregatesPerRun).toString()).intValue();
         this.syslog = this.getSyslog();
         this.sourceDataReader = new FileDataReader(this.sourcePath,this.syslog);
     }

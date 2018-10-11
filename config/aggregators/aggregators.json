@@ -1,0 +1,8 @@
+{
+  "yandex_weather_golubitskaya_10": {
+    "name": "yandex_weather_golubitskaya_10",
+    "sourcePath": "/home/andrey/logger/yandex_weather_golubitskaya/data",
+    "aggregationPeriod": 10,
+    "fields": "#include fields/yandex_weather.json"
+  }
+}

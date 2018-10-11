@@ -1,0 +1,11 @@
+{
+  "yandex_weather_golubitskaya_5": {
+    "name": "yandex_weather_golubitskaya_5",
+    "databaseAdapter": "mysql_local",
+    "collectionName": "weather",
+    "sourcePath": "/home/andrey/logger/aggregators/yandex_weather_golubitskaya_5/data",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0
+  }
+}
