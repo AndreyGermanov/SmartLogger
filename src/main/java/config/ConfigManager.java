@@ -161,7 +161,7 @@ public class ConfigManager implements ISyslog.Loggable {
      * @param collectionName : Name of collection to return (adapters, persisters, loggers etc.)
      * @return Collection of objects
      */
-    private HashMap<String,HashMap<String,Object>> getConfigCollection(String collectionName) {
+    public HashMap<String,HashMap<String,Object>> getConfigCollection(String collectionName) {
         if (config==null || !config.containsKey(collectionName)) return null;
         return (HashMap<String,HashMap<String,Object>>)config.get(collectionName);
     }
@@ -172,7 +172,7 @@ public class ConfigManager implements ISyslog.Loggable {
      * @param nodeName Name of object
      * @return Configuration object as HashMap
      */
-    private HashMap<String,Object> getConfigNode(String collectionName,String nodeName) {
+    public HashMap<String,Object> getConfigNode(String collectionName,String nodeName) {
         HashMap<String,HashMap<String,Object>> collection = getConfigCollection(collectionName);
         if (collection == null || !collection.containsKey(nodeName)) return null;
         return collection.get(nodeName);

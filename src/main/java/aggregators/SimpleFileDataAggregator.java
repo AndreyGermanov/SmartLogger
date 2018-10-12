@@ -81,7 +81,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      * @param config: Configuration object
      */
     public void configure(HashMap<String,Object> config) {
-        if (config == null) return;
+        super.configure(config);
         this.name = config.getOrDefault("name",this.name).toString();
         this.sourcePath = config.getOrDefault("sourcePath",this.sourcePath).toString();
         this.fieldDefs = (HashMap<String,HashMap<String,Object>>)config.getOrDefault("fields",this.fieldDefs);
@@ -358,10 +358,10 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         return path;
     }
 
-    @Override
     /**
      * Returns path to folder, to which current aggregator writes logs with errors, warnings etc.
      */
+    @Override
     public String getSyslogPath() {
         return getAggregatorPath() + "/logs";
     }

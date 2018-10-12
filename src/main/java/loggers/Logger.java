@@ -1,6 +1,8 @@
 package loggers;
 
 import com.google.gson.Gson;
+import cronjobs.CronjobTask;
+import cronjobs.CronjobTaskStatus;
 import loggers.downloaders.IDownloader;
 import loggers.parsers.IParser;
 import main.ISyslog;
@@ -21,7 +23,7 @@ import java.util.HashMap;
  * Each data logger used to download source data using "Data Downloader class", parse it and extract
  * needed fields using "Data parser class" and write to file in filesystem
  */
-public abstract class Logger implements ILogger,Cloneable, Syslog.Loggable {
+public abstract class Logger extends CronjobTask implements ILogger,Cloneable, Syslog.Loggable {
 
     /// ID of logger
     String name;
@@ -38,11 +40,11 @@ public abstract class Logger implements ILogger,Cloneable, Syslog.Loggable {
 
     /**
      * Factory method, used to get instanse of logger of specified type
-     * @param loggerType: Logger type (string representation of logger class)
      * @param config: Configuration object, to configure logger before start
      * @return: Instance of Data Logger class
      */
-    public static ILogger create(String loggerType, HashMap<String,Object> config) {
+    public static ILogger create(HashMap<String,Object> config) {
+        String loggerType = config.getOrDefault("className","").toString();
         ILogger result = null;
         switch (loggerType) {
             case "YandexWeatherLogger": result = new YandexWeatherLogger(config);
@@ -78,9 +80,20 @@ public abstract class Logger implements ILogger,Cloneable, Syslog.Loggable {
      * @param config: Configuration object
      */
     public void configure(HashMap<String, Object> config) {
+        super.configure(config);
         this.name = config.get("name").toString();
         this.shouldWriteDuplicates = Boolean.valueOf(config.getOrDefault("shouldWriteDuplicates","false").toString());
         if (this.syslog == null) this.syslog = new Syslog(this);
+    }
+
+    /**
+     * Method, which Timer used to run this object as a Cronjob ("TimerTask" implementation)
+     */
+    public void run() {
+        super.run();
+        log();
+        setTaskStatus(CronjobTaskStatus.IDLE);
+        setLastExecTime(Instant.now().getEpochSecond());
     }
 
     /**

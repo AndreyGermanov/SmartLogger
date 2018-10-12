@@ -7,7 +7,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
 
+/**
+ * Database adapter for OrientDB databases
+ */
 public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
+
+    // Connection credentials
 
     private String host = "";
     private String port = "";
@@ -15,6 +20,10 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
     private String password = "";
     private String database = "";
 
+    /**
+     * Method used to apply configuration to data adapter
+     * @param config Configuration object
+     */
     public void configure(HashMap<String,Object> config) {
         super.configure(config);
         if (config == null) return;
@@ -25,6 +34,9 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
         this.database = config.getOrDefault("database","").toString();
     }
 
+    /**
+     * Method used to open database connection (which is previously setup adn configured)
+     */
     void connect() {
         String url = "jdbc:orient:remote:"+host+":"+port+"/"+database;
         Properties info = new Properties();

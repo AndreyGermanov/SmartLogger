@@ -15,10 +15,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggable {
+public class FileDatabasePersister extends DatabasePersister implements ISyslog.Loggable {
 
     // Unique name of persister
     private String name = "";
@@ -48,7 +47,7 @@ public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggab
      * Class constructor
      * @param config - Configuration object
      */
-    FileDatabasePersister(HashMap<String,Object> config) {
+    public FileDatabasePersister(HashMap<String,Object> config) {
         this.configure(config);
     }
 
@@ -77,7 +76,7 @@ public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggab
      */
     @Override
     public void configure(HashMap<String, Object> config) {
-        if (config==null) return;
+        super.configure(config);
         name = config.getOrDefault("name",name).toString();
         sourcePath = config.getOrDefault("sourcePath",sourcePath).toString();
         collectionName = config.getOrDefault("collectionName",collectionName).toString();
@@ -180,7 +179,8 @@ public class FileDatabasePersister implements IDatabasePersister, ISyslog.Loggab
         try {
             Gson gson = new Gson();
             if (!Files.exists(statusPath.getParent())) Files.createDirectories(statusPath.getParent());
-            BufferedWriter writer = Files.newBufferedWriter(statusPath,StandardOpenOption.CREATE);
+            Files.deleteIfExists(statusPath);
+            BufferedWriter writer = Files.newBufferedWriter(statusPath,StandardOpenOption.CREATE_NEW);
             writer.write(gson.toJson(lastRecord));
             writer.flush();
             writer.close();

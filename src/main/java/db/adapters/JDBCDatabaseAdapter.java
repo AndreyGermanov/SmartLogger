@@ -9,12 +9,26 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Base class for all Database adapters, which is based on JDBC interface
+ */
 abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
 
+    // Link to database connection
     protected Connection connection;
 
+    /**
+     * Method used to open database connection (which is previously setup adn configured)
+     */
     abstract void connect();
 
+    /**
+     * Base method, used to insert or update data in database
+     * @param collectionName Name of collection to update
+     * @param data Array of records
+     * @param isNew If true, then "INSERT" data, if false then "UPDATE" data
+     * @return Number of affected records
+     */
     public Integer processUpdateQuery(String collectionName, ArrayList<HashMap<String,Object>> data, boolean isNew) {
         if (connection == null) this.connect();
         if (connection == null) return null;
@@ -22,6 +36,11 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
         return updateStatement.isEmpty() ? null : executeUpdateQuery(updateStatement);
     }
 
+    /**
+     * Method used to execute specified update query in database and return number of affected rows
+     * @param updateStatement Query statement to execute
+     * @return Number of affected rows
+     */
     Integer executeUpdateQuery(Object updateStatement) {
         String updateString = updateStatement.toString();
         try {
@@ -40,6 +59,13 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
         }
     }
 
+    /**
+     * Method used to prepare set of SQL queries to UPDATE or INSERT multiple records to database
+     * @param collectionName Name of collection to update
+     * @param data Array or data rows to UPDATE or INSERT
+     * @param isNew if true, then method will return INSERT queries, otherwise will return UPDATE queries
+     * @return Set of INSERT or UPDATE query lines, delimited by ';' symbol
+     */
     String prepareUpdateBatchSQL(String collectionName,ArrayList<HashMap<String,Object>> data,boolean isNew) {
         Optional<String> result = data.stream()
                 .filter((row) -> row.size()>0)
@@ -49,6 +75,13 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
         return result.orElse("");
     }
 
+    /**
+     * Returns INSERT or UPDATE query statement for provided data row
+     * @param collectionName Name of collection to update
+     * @param row Row which is a set of fields
+     * @param isNew if true, then method will return INSERT query, otherwise will return UPDATE query
+     * @return
+     */
     String prepareUpdateSQL(String collectionName,HashMap<String,Object> row, boolean isNew) {
         HashMap<String,String> fields = row.keySet().stream()
                 .filter((fieldName) -> formatFieldValueForSQL(collectionName,fieldName,row.get(fieldName)) != null )
@@ -67,6 +100,14 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
         return "UPDATE "+collectionName+" SET "+fieldString+" WHERE id="+idValue;
     }
 
+    /**
+     * Formats value for specified field for UPDATE or INSERT query, depending on type of this field, defined
+     * in configuration file
+     * @param collectionName Name of collection
+     * @param fieldName Name of field
+     * @param value Value of field to format
+     * @return Properly formatted and escaped value to insert to SQL query line
+     */
     String formatFieldValueForSQL(String collectionName,String fieldName,Object value) {
         if (!isValidFieldConfig(collectionName,fieldName)) return null;
         if (value == null) return null;

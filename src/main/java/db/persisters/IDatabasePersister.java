@@ -1,8 +1,10 @@
 package db.persisters;
 
+import cronjobs.ICronjobTask;
+
 import java.util.HashMap;
 
-interface IDatabasePersister {
-    public Integer persist();
-    public void configure(HashMap<String,Object> config);
+interface IDatabasePersister extends ICronjobTask {
+    Integer persist();
+    void configure(HashMap<String,Object> config);
 }
