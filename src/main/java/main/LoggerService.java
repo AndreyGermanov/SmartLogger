@@ -53,16 +53,18 @@ public class LoggerService {
     }
 
     /**
-     * Method used to setup cronjobs for all configured modules
+     * Method used to setup cronjobs for all configured modules in collection of specified type
+     * @param collectionType Type of module (loggers,aggregators, persisters etc.)
      */
     private void startCronjobs(String collectionType) {
-        HashMap<String,HashMap<String,Object>> config = configManager.getConfigCollection(collectionType);
-        for (String name  : config.keySet()) {
+        HashMap<String,HashMap<String,Object>> collection = configManager.getConfigCollection(collectionType);
+        if (collection == null || collection.size() == 0) return;
+        collection.forEach((name,value) -> {
             Cronjob cronjob = createCronjob(collectionType,name);
-            if (cronjob == null) continue;
+            if (cronjob == null) return;
             cronjobs.put(cronjob.getTask().getName(),cronjob);
             (new Timer()).schedule(cronjob,0, cronjob.getPollPeriod()*1000);
-        }
+        });
     }
 
     /**

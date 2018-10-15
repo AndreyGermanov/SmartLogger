@@ -1,5 +1,7 @@
 package cronjobs;
 
+import main.ISyslog;
+
 import java.time.Instant;
 import java.util.HashMap;
 
@@ -46,7 +48,7 @@ public abstract class CronjobTask implements ICronjobTask {
     }
 
     /**
-     * Method which used by Cronjob ojbect to start this task
+     * Method which used by Cronjob object to start this task
      */
     public void run() {
         setLastStartTime(Instant.now().getEpochSecond());

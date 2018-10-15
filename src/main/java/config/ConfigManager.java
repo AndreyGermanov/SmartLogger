@@ -149,12 +149,14 @@ public class ConfigManager implements ISyslog.Loggable {
     public HashMap<String,HashMap<String,Object>> getDatabasePersisters() { return getConfigCollection("persisters");}
     public HashMap<String,HashMap<String,Object>> getDataAggregators() { return getConfigCollection("aggregators");}
     public HashMap<String,HashMap<String,Object>> getDataLoggers() { return getConfigCollection("loggers");}
+    public HashMap<String,HashMap<String,Object>> getDataArchivers() { return getConfigCollection("archivers");}
 
     // Methods returns configuration for different type of object specified by it's name
     public HashMap<String,Object> getDatabaseAdapter(String name) { return getConfigNode("adapters",name);}
     public HashMap<String,Object> getDatabasePersister(String name) { return getConfigNode("persisters",name);}
     public HashMap<String,Object> getDataAggregator(String name) { return getConfigNode("aggregators",name);}
     public HashMap<String,Object> getDataLogger(String name) { return getConfigNode("loggers",name);}
+    public HashMap<String,Object> getDataArchiver(String name) { return getConfigNode("archivers",name);}
 
     /**
      * Method used to return top level collection of configuration objects from root config
