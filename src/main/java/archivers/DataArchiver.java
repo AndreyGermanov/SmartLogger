@@ -201,13 +201,13 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         try {
             long fileSize = Files.size(file);
             if (maxArchiveSize>0 && getArchivedFilesSize()+fileSize > maxArchiveSize) {
-                addArchivedFilesSize(fileSize);
                 return false;
             }
             if (maxArchiveFilesCount>0 && getArchivedFilesCount()+1>maxArchiveFilesCount) {
-                incArchivedFilesCount();
                 return false;
             }
+            addArchivedFilesSize(fileSize);
+            incArchivedFilesCount();
         }
         catch (IOException e) {
             e.printStackTrace();

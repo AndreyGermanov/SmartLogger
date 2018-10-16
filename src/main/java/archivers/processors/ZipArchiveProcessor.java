@@ -1,16 +1,17 @@
 package archivers.processors;
 
 import archivers.IDataArchiver;
+import archivers.ZipArchiveExtractor;
 import main.ISyslog;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -36,6 +37,7 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
      * @return True if archive initialized successfully or false otherwise
      */
     public boolean validateAndInitArchive() {
+        if (archiver instanceof ZipArchiveExtractor) return true;
         if (!super.validateAndInitArchive()) return false;
         try {
             archiveName = "";
@@ -78,6 +80,7 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
      * Method called after last file placed to archive
      */
     public void finish() {
+        if (archiver instanceof ZipArchiveExtractor) return;
         try {
             if (archiver.getArchivedFilesCount()>0) {
                 archive.close();
@@ -90,6 +93,35 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
             syslog.log(ISyslog.LogLevel.ERROR,"Could not finish writing archive file '"+getArchiveFilePath()+". "+
             "Error message: "+e.getMessage(),this.getClass().getName(),"finish");
         }
+    }
+
+    /**
+     * Utility method used by ZipArchiveExtractor to extract ZIP archive to destination folder
+     * @param zipFile Source ZIP file to extract
+     * @return Extracted files count
+     */
+    public long extractArchive(Path zipFile) {
+        long extractedFilesCount = 0L;
+        try {
+            ZipInputStream is = new ZipInputStream(new FileInputStream(zipFile.toString()));
+            ZipEntry entry = is.getNextEntry();
+            byte[] buffer = new byte[1024];
+            while (entry != null) {
+                Path fullPath = Paths.get(archiver.getDestinationPath()+"/"+entry.getName());
+                if (!Files.exists(fullPath.getParent())) Files.createDirectories(fullPath.getParent());
+                FileOutputStream os = new FileOutputStream(fullPath.toFile());
+                int len;
+                while ((len = is.read(buffer))>0)
+                    os.write(buffer,0,len);
+                os.close();
+                extractedFilesCount++;
+                entry = is.getNextEntry();
+            }
+        } catch (IOException e) {
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not extract zip file '"+zipFile.toString()+". "+
+            "Error message: "+e.getMessage(),this.getClass().getName(),"extractArchive");
+        }
+        return extractedFilesCount;
     }
 
     /**
