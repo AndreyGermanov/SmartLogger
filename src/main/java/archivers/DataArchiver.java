@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -76,6 +78,8 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         switch (type) {
             case "copy": return new FileCopyDataArchiver(config);
             case "zip": return new FileZipDataArchiver(config);
+            case "data_copy": return new DataCopyDataArchiver(config);
+            case "data_zip": return new DataZipDataArchiver(config);
             default: return null;
         }
     }
@@ -170,7 +174,10 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      */
     private long archiveFiles() {
         try {
-            Files.walk(Paths.get(sourcePath)).filter(this::checkFile).sorted(this::sortFiles).forEach(this::processFile);
+            Files.walk(Paths.get(sourcePath)).filter(p -> Files.isRegularFile(p))
+                    .sorted(this::sortFiles)
+                    .filter(this::checkFile)
+                    .forEach(this::processFile);
             return archivedFilesCount;
         } catch (IOException e) {
             syslog.log(ISyslog.LogLevel.ERROR,"Could not archive files. Error message: '"+e.getMessage(),
@@ -187,18 +194,23 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     public boolean checkFile(Path file) {
         if (!Files.isRegularFile(file)) return false;
         if (file.toString().endsWith(".tmp")) return false;
+        if (file.toString().equals(lastFileName)) return false;
+        if (lastFileTimestamp>0 && getFileTimestamp(file) < lastFileTimestamp) return false;
+        if (getFileTimestamp(file).equals(lastFileTimestamp) &&
+                file.toString().compareTo(lastFileName)<0) return false;
         try {
             long fileSize = Files.size(file);
             if (maxArchiveSize>0 && getArchivedFilesSize()+fileSize > maxArchiveSize) {
                 addArchivedFilesSize(fileSize);
                 return false;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            if (maxArchiveFilesCount>0 && getArchivedFilesCount()+1>maxArchiveFilesCount) {
+                incArchivedFilesCount();
+                return false;
+            }
         }
-        if (maxArchiveFilesCount>0 && getArchivedFilesCount()+1>maxArchiveFilesCount) {
-            incArchivedFilesCount();
+        catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -211,10 +223,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * @return 0 - if files are equal, >0 if first file greater than second, <0 if first file less than seconf
      */
     private int sortFiles(Path file1,Path file2) {
-        try {
-            return Long.valueOf(Files.getLastModifiedTime(file1).toMillis() -
-                    Files.getLastModifiedTime(file2).toMillis()).intValue();
-        } catch (IOException e) { return 0;}
+        return Long.valueOf(getFileTimestamp(file1) - getFileTimestamp(file2)).intValue();
     }
 
     /**
@@ -232,15 +241,11 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     public void finishFileProcessing(Path sourceFile) {
         lastFileName = sourceFile.toString();
         lastFileTimestamp = getFileTimestamp(sourceFile);
-        incArchivedFilesCount();
-        try {
-            addArchivedFilesSize(Files.size(sourceFile));
-        } catch (IOException e) { e.printStackTrace();}
         processor.finishFileProcessing(sourceFile);
     }
 
     /**
-     * Method used to get timestmap of file
+     * Method used to get timestamp of file
      * @param file - File to get timestamp of
      * @return Timestamp of file
      */
@@ -250,6 +255,34 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         } catch (IOException e) {
             syslog.log(ISyslog.LogLevel.ERROR,"Could not get timestamp of file '"+file.toString()+"'." +
                     "Error message: '"+e.getMessage(), this.getClass().getName(),"archiveFiles");
+            return 0L;
+        }
+    }
+
+    /**
+     * Method used to get timestmap of file
+     * @param file - File to get timestamp of
+     * @param usingPathContents - If true, than function uses components of path to determine timestamp
+     *                          (used for logged data),otherwise it reads last modified time of file
+     * @return Timestamp of file
+     */
+    protected Long getFileTimestamp(Path file, boolean usingPathContents) {
+        if (!usingPathContents) return getFileTimestamp(file);
+        Path parentPath = file.getParent();
+        if (parentPath.getNameCount()<6) return 0L;
+        try {
+            String fileName = file.getFileName().toString();
+            int count = parentPath.getNameCount();
+            int second = Integer.parseInt(fileName.substring(0,fileName.indexOf(".")));
+            int minute = Integer.parseInt(parentPath.getName(count-1).toString());
+            int hour = Integer.parseInt(parentPath.getName(count-2).toString());
+            int day = Integer.parseInt(parentPath.getName(count-3).toString());
+            int month = Integer.parseInt(parentPath.getName(count-4).toString());
+            int year = Integer.parseInt(parentPath.getName(count-5).toString());
+            return LocalDateTime.of(year,month,day,hour,minute,second).toEpochSecond(ZoneOffset.UTC);
+        } catch (Exception e) {
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not get timestamp for path '"+parentPath.toString()+"'. "+
+                    "Error message: "+e.getMessage(),this.getClass().getName(),"getFileTimestamp");
             return 0L;
         }
     }

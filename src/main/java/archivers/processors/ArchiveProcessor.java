@@ -28,8 +28,8 @@ public abstract class ArchiveProcessor implements IArchiveProcessor {
      */
     public static IArchiveProcessor create(String type, IDataArchiver archiver) {
         switch (type) {
-            case "copy": return new CopyArchiveProcessor(archiver);
-            case "zip": return new ZipArchiveProcessor(archiver);
+            case "copy": case "data_copy": return new CopyArchiveProcessor(archiver);
+            case "zip": case "data_zip": return new ZipArchiveProcessor(archiver);
             default: return null;
         }
     }
