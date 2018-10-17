@@ -16,6 +16,7 @@ dependencies {
     compile("mysql", "mysql-connector-java", "8.0.12")
     compile("com.orientechnologies","orientdb-jdbc","3.0.8")
     compile("org.mongodb","mongodb-driver-sync","3.8.2")
+    compile("commons-net","commons-net","3.6")
 }
 
 configure<JavaPluginConvention> {

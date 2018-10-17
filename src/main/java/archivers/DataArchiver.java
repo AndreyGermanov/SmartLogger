@@ -80,6 +80,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
             case "zip": return new FileZipDataArchiver(config);
             case "data_copy": return new DataCopyDataArchiver(config);
             case "data_zip": return new DataZipDataArchiver(config);
+            case "send_ftp": return new SendFtpDataArchiver(config);
             default: return null;
         }
     }
@@ -126,6 +127,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         removeSourceAfterArchive = Boolean.parseBoolean(config.getOrDefault("removeSourceAfterArchive",removeSourceAfterArchive).toString());
         if (syslog == null) syslog = new Syslog(this);
         processor = ArchiveProcessor.create(config.getOrDefault("type","").toString(),this);
+        if (processor != null) processor.configure(config);
     }
 
     /**

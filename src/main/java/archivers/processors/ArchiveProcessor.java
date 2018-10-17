@@ -30,6 +30,7 @@ public abstract class ArchiveProcessor implements IArchiveProcessor {
         switch (type) {
             case "copy": case "data_copy": return new CopyArchiveProcessor(archiver);
             case "zip": case "data_zip": return new ZipArchiveProcessor(archiver);
+            case "send_ftp": return new SendFtpArchiveProcessor(archiver);
             default: return null;
         }
     }
@@ -42,6 +43,8 @@ public abstract class ArchiveProcessor implements IArchiveProcessor {
         this.archiver = archiver;
         syslog = archiver.getSyslog();
     }
+
+    ArchiveProcessor() {}
 
     /**
      * Method used to initialize archive before starting put files to it
