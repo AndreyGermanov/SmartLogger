@@ -1,5 +1,7 @@
 package archivers;
 
+import config.ConfigManager;
+import main.LoggerApplication;
 import org.junit.Test;
 import utils.DataMap;
 import utils.FileUtils;
@@ -12,6 +14,8 @@ public class FileCopyDataArchiverTest {
 
     @Test
     public void archive() {
+        ConfigManager.getInstance().loadConfig();
+        LoggerApplication.getInstance().configure(ConfigManager.getInstance().getConfig());
         String rootDestDir = "/home/andrey/logger/test/archivers/";
         String sourceDir = "/home/andrey/logger/aggregators/yandex_weather_golubitskaya_10";
         Path sourcePath = Paths.get(sourceDir);

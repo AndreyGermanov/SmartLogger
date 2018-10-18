@@ -20,4 +20,9 @@ public abstract class DataAggregator extends CronjobTask implements IDataAggrega
         setLastExecTime(Instant.now().getEpochSecond());
     }
 
+    /**
+     * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
+     * @return Collection name as string
+     */
+    protected String getCollectionType() { return "aggregators"; }
 }

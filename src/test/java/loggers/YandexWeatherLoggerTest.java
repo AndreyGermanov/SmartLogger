@@ -1,8 +1,10 @@
 package loggers;
 import com.google.gson.Gson;
+import config.ConfigManager;
 import main.LoggerApplication;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -22,7 +24,7 @@ class YandexWeatherLoggerMoc extends YandexWeatherLogger {
 
     public HashMap<String,Object> fakeLastRecord;
 
-    HashMap<String,Object> getLastRecord() {
+    protected HashMap<String,Object> getLastRecord() {
         if (fakeLastRecord != null)
             return fakeLastRecord;
         else
@@ -31,6 +33,13 @@ class YandexWeatherLoggerMoc extends YandexWeatherLogger {
 }
 
 public class YandexWeatherLoggerTest {
+
+    @Before
+    public void init() {
+        ConfigManager configManager = ConfigManager.getInstance();
+        configManager.loadConfig();
+        LoggerApplication.getInstance().configure(configManager.getConfig());
+    }
 
     private YandexWeatherLoggerMoc logger = new YandexWeatherLoggerMoc("yandex_weather_golubitskaya1","golubitskaya");
     private Gson gson = new Gson();

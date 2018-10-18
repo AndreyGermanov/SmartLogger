@@ -56,23 +56,25 @@ public class SendFtpArchiveProcessor extends ArchiveProcessor {
         String sourcePath = archiver.getSourcePath();
         if (!Files.exists(Paths.get(sourcePath))) return false;
         try {
-           connection.connect(host,port);
-           int reply = connection.getReplyCode();
-           if (!FTPReply.isPositiveCompletion(reply)) {
+            connection.setDataTimeout(30000);
+            connection.connect(host,port);
+            int reply = connection.getReplyCode();
+            if (!FTPReply.isPositiveCompletion(reply)) {
                connection.disconnect();
                syslog.log(ISyslog.LogLevel.ERROR,"Could not initiate FTP connection. "+
                        "Error message: "+connection.getReplyString(),this.getClass().getName(),
                        "validateAndInitArchive");
                return false;
-           }
-           if (!connection.login(username,password)) {
+            }
+            if (!connection.login(username,password)) {
                syslog.log(ISyslog.LogLevel.ERROR,"Could not initiate FTP connection. "+
                        "Invalid login or password.",this.getClass().getName(),"validateAndInitArchive");
                return false;
-           }
-           if (passiveMode) connection.enterLocalPassiveMode();
-           if (!rootPath.equals("/")) connection.changeWorkingDirectory(rootPath);
-           connection.setFileType(FTP.BINARY_FILE_TYPE);
+            }
+            if (passiveMode) connection.enterLocalPassiveMode();
+            if (!rootPath.equals("/")) connection.changeWorkingDirectory(rootPath);
+            connection.setFileType(FTP.BINARY_FILE_TYPE);
+            connection.setConnectTimeout(30000);
         } catch (IOException e) {
             syslog.log(ISyslog.LogLevel.ERROR,"Could not initiate FTP connection. "+
                     "Error message: "+e.getMessage(),this.getClass().getName(),"validateAndInitArchive");
@@ -97,7 +99,6 @@ public class SendFtpArchiveProcessor extends ArchiveProcessor {
                         this.getClass().getName(), "processFile");
             }
         } catch (IOException e) {
-            e.printStackTrace();
             syslog.log(ISyslog.LogLevel.ERROR,"Could not upload file by FTP: '"+sourceFile.toString()+"'. "+
                     "Error message: "+e.getMessage(),this.getClass().getName(),"processFile");
         }

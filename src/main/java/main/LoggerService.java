@@ -46,7 +46,6 @@ public class LoggerService {
      */
     public void start() {
         if (started) return;
-        ConfigManager.getInstance().loadConfig();
         String[] collections = {"loggers","aggregators","persisters"};
         Arrays.stream(collections).forEach(this::startCronjobs);
         this.started = true;

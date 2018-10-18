@@ -27,8 +27,6 @@ import java.util.HashMap;
  */
 public abstract class DataArchiver extends CronjobTask implements IDataArchiver, ISyslog.Loggable {
 
-    // Path, which archiver used to write status data (as timestamp of last processed file)
-    private String statusPath = "";
     // Destination path in which archiver created
     private String destinationPath = "";
     // Source path of files to archive
@@ -139,7 +137,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         archivedFilesCount = 0L;
         archivedFilesSize = 0L;
         if (processor == null || !processor.validateAndInitArchive()) return result;
-        readLastRecord();
+        readAndSetLastRecord();
         result = archiveFiles();
         processor.finish();
         writeLastRecord();
@@ -147,25 +145,19 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     }
 
     /**
-     * Method used to read information about last file, archived in last archiver run.
-     * This information includes last processed file name and timestamp of this file
+     * Method used to get string value of last record from status file, parse it and setup
      */
-    private void readLastRecord() {
-        Path path = Paths.get(getStatusPath()+"/last_record");
-        if (Files.notExists(path)) return;
-        try (BufferedReader reader = Files.newBufferedReader(path) ) {
-            String record = reader.readLine();
-            if (record==null || record.isEmpty()) return;
+    private void readAndSetLastRecord() {
+        String record = readLastRecord();
+        if (record == null || record.isEmpty()) return;
+        try {
             String[] tokens = record.split(" ");
             if (tokens.length < 2) return;
             lastFileTimestamp = Long.parseLong(tokens[0]);
             lastFileName = Arrays.stream(tokens).skip(1).reduce((s,s1) -> s+=" "+s1).orElse("");
         } catch (NumberFormatException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not parse timestamp from last record file '"+path.toString()+"'."+
-                    "Error message+'"+ e.getMessage()+"'",this.getClass().getName(),"readLastRecord");
-        } catch (IOException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not read last record from file '"+path.isAbsolute()+"'."+
-                    "Error message+'"+ e.getMessage()+"'",this.getClass().getName(),"readLastRecord");
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not parse timestamp from last record '"+record+"'."+
+                    "Error message+'"+ e.getMessage()+"'",this.getClass().getName(),"readAndSetLastRecord");
         }
     }
 
@@ -290,24 +282,12 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     }
 
     /**
-     * Method used to write record about last archived file. Information includes full path to last archived file
-     * and timestamp of this file
+     * Returns serialized information about last record as a string, ready to write to file in "statusPath"
+     * @return String representation of last record or null if not able to produce this string
      */
-    private void writeLastRecord() {
-        if (lastFileName.isEmpty() || lastFileTimestamp == 0L) return;
-        Path path = Paths.get(getStatusPath()+"/last_record");
-        try {
-            if (Files.notExists(path.getParent())) Files.createDirectories(path.getParent());
-            Files.deleteIfExists(path);
-            BufferedWriter writer = Files.newBufferedWriter(path);
-            writer.write(lastFileTimestamp.toString()+" "+lastFileName);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not read last record to file '"+path.isAbsolute()+"'."+
-                    "Error message+'"+ e.getMessage()+"'",this.getClass().getName(),"writeLastRecord");
-        }
+    protected String getLastRecordString() {
+        if (lastFileName.isEmpty() || lastFileTimestamp == 0L) return null;
+        return lastFileTimestamp.toString()+" "+lastFileName;
     }
 
     /**
@@ -317,7 +297,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      */
     public Path getDestinationPathOfFile(Path file) {
         String relativePath = file.toString().replace(sourcePath,"");
-        return Paths.get(destinationPath+relativePath);
+        return Paths.get(getDestinationPath()+relativePath);
     }
 
     /**
@@ -330,6 +310,12 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     }
 
     /**
+     * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
+     * @return Collection name as string
+     */
+    protected String getCollectionType() { return "archivers";}
+
+    /**
      * Getters and setters for properties
      */
 
@@ -338,18 +324,18 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         return this.name;
     }
 
-    @Override
-    public String getSyslogPath() {
-        return LoggerApplication.getInstance().getCachePath()+"/logs/archivers/";
-    }
 
-    private String getStatusPath() {
-        if (!statusPath.isEmpty()) return statusPath;
-        return LoggerApplication.getInstance().getCachePath()+"/archivers/"+this.getName();
-    }
 
     public String getSourcePath() { return sourcePath; }
-    public String getDestinationPath() { return destinationPath; }
+
+    public String getDestinationPath() {
+        String resultPath = destinationPath;
+        if (resultPath.isEmpty())
+            resultPath = LoggerApplication.getInstance().getCachePath()+"/archivers/"+this.getName();
+        if (!Paths.get(resultPath).isAbsolute())
+            resultPath = LoggerApplication.getInstance().getCachePath()+"/archivers/"+this.getName()+"/"+destinationPath;
+        return resultPath;
+    }
     public ISyslog getSyslog() { return syslog; }
     public boolean getRemoveSourceAfterArchive() { return removeSourceAfterArchive; }
 

@@ -5,9 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.internal.LinkedTreeMap;
 import main.ISyslog;
 import main.LoggerApplication;
-import main.Syslog;
 import utils.DataMap;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -25,20 +23,15 @@ public class ConfigManager implements ISyslog.Loggable {
     private static ConfigManager instance;
     // Link to loaded configuration object
     private HashMap<String,Object> config;
-    // Link to system logger
-    private ISyslog syslog;
 
     /**
      * Class constructor
      */
-    private ConfigManager() {
-        syslog = new Syslog(this);
-    }
-
+    private ConfigManager() { }
 
     /**
      * Method used to load singleton instance of this class
-     * @return
+     * @return instance of Config manager
      */
     public static ConfigManager getInstance() {
         if (instance == null) instance = new ConfigManager();
@@ -62,7 +55,7 @@ public class ConfigManager implements ISyslog.Loggable {
      * Method defines default empty configuration, if no configuration found on disk
      * @return HashMap with default configuration object
      */
-    HashMap<String,Object> getDefaultConfig() {
+    private HashMap<String,Object> getDefaultConfig() {
         return DataMap.create("loggers",new HashMap<String,Object>(),
                 "aggregators", new HashMap<String,Object>(),
                 "adapters", new HashMap<String,Object>(),
@@ -73,10 +66,9 @@ public class ConfigManager implements ISyslog.Loggable {
      * Method writes configuration object to file as JSON
      * @param path Path to file
      * @param config Configuration object
-     * @return True if operation completed successfully or false otherwise
      */
-    private boolean writeConfigToFile(Path path, HashMap<String,Object> config) {
-        if (config == null) return false;
+    private void writeConfigToFile(Path path, HashMap<String,Object> config) {
+        if (config == null) return;
         try {
             if (!Files.exists(path.getParent()))
                 Files.createDirectories(path.getParent());
@@ -84,11 +76,10 @@ public class ConfigManager implements ISyslog.Loggable {
             BufferedWriter writer = Files.newBufferedWriter(path,StandardOpenOption.CREATE);
             writer.write(gson.toJson(config));
             writer.close();
-            return true;
         } catch (IOException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not write config file '"+path.toString()+"'. "+
-                    "Error message: '"+e.getMessage()+"'",this.getClass().getName(),"writeConfigFile");
-            return false;
+            System.err.println("Could not write config file '"+path.toString()+"'. "+
+                    "Error message: '"+e.getMessage()+"'");
+            System.exit(1);
         }
     }
 
@@ -99,7 +90,6 @@ public class ConfigManager implements ISyslog.Loggable {
      */
     private HashMap<String,Object> readConfigFile(Path path) {
         if (Files.notExists(path)) return null;
-        HashMap<String,Object> result = new HashMap<>();
         try {
             BufferedReader reader = Files.newBufferedReader(path);
             String configString = reader.lines().reduce((s,s1) -> s+=s1).orElse("");
@@ -108,9 +98,9 @@ public class ConfigManager implements ISyslog.Loggable {
             if (configMap == null) return null;
             return parseConfig(path,(HashMap<String,Object>)configMap.clone());
         } catch (Exception e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not parse config from file '"+path.toString()+"'. "+
-            "Error message: "+ Arrays.stream(e.getStackTrace()).map(s->s.toString()).reduce((s,s1)->s+="\n"+s1),
-                    this.getClass().getName(),"readConfigFile");
+            System.err.println("Could not parse config from file '"+path.toString()+"'. "+
+            "Error message: "+ Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).reduce((s, s1)->s+="\n"+s1));
+            System.exit(1);
             return null;
         }
     }
@@ -130,7 +120,8 @@ public class ConfigManager implements ISyslog.Loggable {
             if (key.toString().equals("#include")) {
                 Path path = Paths.get(configNode.toString());
                 if (!path.isAbsolute()) path = Paths.get(rootPath.getParent().toString(),path.toString());
-                result.putAll(readConfigFile(path));
+                HashMap<String,Object> includeConfig = readConfigFile(path);
+                if (includeConfig != null) result.putAll(includeConfig);
             } else if (configNode instanceof LinkedTreeMap) {
                 result.put(key.toString(), parseConfig(rootPath, (LinkedTreeMap)configNode));
             } else if (configNode.toString().startsWith("#include")) {
@@ -143,13 +134,6 @@ public class ConfigManager implements ISyslog.Loggable {
         }
         return result;
     }
-
-    // Methods returns collections of various configuration objects, found in current config
-    public HashMap<String,HashMap<String,Object>> getDatabaseAdapters() { return getConfigCollection("adapters");}
-    public HashMap<String,HashMap<String,Object>> getDatabasePersisters() { return getConfigCollection("persisters");}
-    public HashMap<String,HashMap<String,Object>> getDataAggregators() { return getConfigCollection("aggregators");}
-    public HashMap<String,HashMap<String,Object>> getDataLoggers() { return getConfigCollection("loggers");}
-    public HashMap<String,HashMap<String,Object>> getDataArchivers() { return getConfigCollection("archivers");}
 
     // Methods returns configuration for different type of object specified by it's name
     public HashMap<String,Object> getDatabaseAdapter(String name) { return getConfigNode("adapters",name);}
@@ -164,7 +148,7 @@ public class ConfigManager implements ISyslog.Loggable {
      * @return Collection of objects
      */
     public HashMap<String,HashMap<String,Object>> getConfigCollection(String collectionName) {
-        if (config==null || !config.containsKey(collectionName)) return null;
+        if (config==null || !config.containsKey(collectionName) || !(config.get(collectionName) instanceof HashMap)) return null;
         return (HashMap<String,HashMap<String,Object>>)config.get(collectionName);
     }
 
@@ -187,6 +171,8 @@ public class ConfigManager implements ISyslog.Loggable {
 
     @Override
     public String getSyslogPath() {
-        return LoggerApplication.getInstance().getCachePath()+"/"+this.getName();
+        return LoggerApplication.getInstance().getLogPath()+"/"+this.getName();
     }
+
+    public HashMap<String,Object> getConfig() { return config;}
 }

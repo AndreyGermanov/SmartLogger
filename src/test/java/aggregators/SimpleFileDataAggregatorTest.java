@@ -1,6 +1,7 @@
 package aggregators;
 
 import config.ConfigManager;
+import main.LoggerApplication;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +12,7 @@ public class SimpleFileDataAggregatorTest {
     @Before
     public void init() {
         ConfigManager.getInstance().loadConfig();
+        LoggerApplication.getInstance().configure(ConfigManager.getInstance().getConfig());
     }
 
     @Test

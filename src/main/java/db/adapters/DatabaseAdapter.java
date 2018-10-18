@@ -163,7 +163,7 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
      * @return
      */
     public String getSyslogPath() {
-        return LoggerApplication.getInstance().getCachePath()+"/logs/db/"+this.getName()+"/";
+        return LoggerApplication.getInstance().getLogPath()+"/db/"+this.getName()+"/";
     }
 
     /**
@@ -173,4 +173,7 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
     public void setSyslog(ISyslog syslog) {
         this.syslog = syslog;
     }
+
+    protected String getCollectionType() { return "adapters"; }
+
 }

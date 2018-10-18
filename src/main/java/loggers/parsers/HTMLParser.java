@@ -63,12 +63,12 @@ public abstract class HTMLParser extends Parser {
 
     /**
      * Helper method which parses single field from input string and returns result
-     * @param name: Name of field to extract
+     * @param fieldName: Name of field to extract
      * @param inputString: Source string, to search field in
      * @return Object with field value. Type of object depends on field type
      */
-    Object parseField(Object name,String inputString) {
-        HashMap<String,Object> fieldMetadata = fieldDefs.get(name);
+    Object parseField(Object fieldName,String inputString) {
+        HashMap<String,Object> fieldMetadata = fieldDefs.get(fieldName);
         String regex = fieldMetadata.get("regex").toString();
         Class type = (Class)fieldMetadata.get("type");
         try {

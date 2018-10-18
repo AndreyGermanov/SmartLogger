@@ -37,11 +37,15 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
     private HashMap<String,Object> lastRecord;
     /// Should write duplicate data (if current record is the same as previous (lastRecord)).
     public boolean shouldWriteDuplicates = false;
+    /// Destination path to which logger will write parsed data
+    private String destinationPath = "";
+    /// Path, to which logger will write status information, as last record
+    private String statusPath = "";
 
     /**
      * Factory method, used to get instanse of logger of specified type
      * @param config: Configuration object, to configure logger before start
-     * @return: Instance of Data Logger class
+     * @return Instance of Data Logger class
      */
     public static ILogger create(HashMap<String,Object> config) {
         String loggerType = config.getOrDefault("className","").toString();
@@ -83,6 +87,8 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         super.configure(config);
         this.name = config.get("name").toString();
         this.shouldWriteDuplicates = Boolean.valueOf(config.getOrDefault("shouldWriteDuplicates","false").toString());
+        this.destinationPath = config.getOrDefault("destinationPath",destinationPath).toString();
+        this.statusPath = config.getOrDefault("statusPath",statusPath).toString();
         if (this.syslog == null) this.syslog = new Syslog(this);
     }
 
@@ -133,7 +139,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
      * @return True if provided record is different or false otherwise
      */
     boolean isRecordChanged(HashMap<String,Object> record) {
-        if (lastRecord == null) lastRecord = getLastRecord();
+        if (lastRecord == null) readAndSetLastRecord();
         if (lastRecord == null) return true;
         if (record == lastRecord) return false;
         if (record == null) return true;
@@ -147,11 +153,21 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
     }
 
     /**
-     * Method returns last data record, written to filesystem by this logger
-     * @return Record object
+     * Method used to get string value of last record from status file, parse it and setup
      */
-    HashMap<String,Object> getLastRecord() {
-        return lastRecord;
+    protected void readAndSetLastRecord() {
+        String record = readLastRecord();
+        if (record == null || record.isEmpty()) return;
+        Gson gson = new Gson();
+        lastRecord = gson.fromJson(record,HashMap.class);
+    }
+
+    /**
+     * Returns serialized information about last record as a string, ready to write to file in "statusPath"
+     * @return String representation of last record or null if not able to produce this string
+     */
+    protected String getLastRecordString() {
+        return getJson(lastRecord);
     }
 
     /**
@@ -163,14 +179,13 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         String recordPath = getRecordPath(record);
         Path path = Paths.get(recordPath);
         try {
-            if (!Files.exists(path.getParent())) {
-                Files.createDirectories(path.getParent());
-            }
+            if (!Files.exists(path.getParent())) Files.createDirectories(path.getParent());
             BufferedWriter recordFile = Files.newBufferedWriter(path);
-            String json =getJson(record);
+            String json = getJson(record);
             recordFile.write(json);
             recordFile.flush();
             lastRecord = (HashMap<String,Object>)record.clone();
+            writeLastRecord();
         } catch (IOException e) {
             syslog.logException(e,this,"writeRecord");
         }
@@ -183,13 +198,11 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
      */
     String getRecordPath(HashMap<String,Object> record) {
         if (record == null) return "";
-        String cacheRootPath = LoggerApplication.getInstance().getCachePath();
         String timestampStr = record.get("timestamp").toString();
         long timestamp = new Long(timestampStr);
         LocalDateTime date = LocalDateTime.ofEpochSecond(timestamp,0,ZoneOffset.UTC);
-        String path = cacheRootPath + "/" + this.getName() + "/data/"+ date.getYear() + "/" + date.getMonthValue() + "/" +
+        return getDestinationPath() + "/" + this.getName() + "/data/"+ date.getYear() + "/" + date.getMonthValue() + "/" +
                 date.getDayOfMonth() + "/" + date.getHour() + "/" + date.getMinute() + "/" + date.getSecond() + ".json";
-        return path;
     }
 
     /**
@@ -204,20 +217,32 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
     }
 
     /**
-     * Method returns path to log files, which Syslog uses to write error, info or warning messages
-     * related to work of this data logger
-     * @return Full path to directory for log files of this module
+     * Method returns destination path, which is a base path, to which logger writes data
+     * @return String with path
      */
-    public String getSyslogPath() { return LoggerApplication.getInstance().getCachePath()+"/"+this.getName()+"/logs/"; }
-
+    public String getDestinationPath() {
+        String resultPath = destinationPath;
+        if (resultPath == null || resultPath.isEmpty())
+            resultPath = LoggerApplication.getInstance().getCachePath()+"/loggers/"+this.getName();
+        if (!Paths.get(resultPath).isAbsolute())
+            resultPath = LoggerApplication.getInstance().getCachePath()+"/loggers/"+this.getName() + resultPath;
+        System.out.println(resultPath);
+        return resultPath;
+    }
 
     /**
-     * Used to get unique name of this logger moddule
+     * Used to get unique name of this logger module
      * @return
      */
     public String getName() {
         return this.name;
     }
+
+    /**
+     * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
+     * @return Collection name as string
+     */
+    protected String getCollectionType() { return "loggers"; }
 
     /**
      * Used to get link to current syslog object, used to log messages about this logger
@@ -232,6 +257,8 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
     public void setSyslog(ISyslog syslog) {
         this.syslog = syslog;
     }
+
+    protected HashMap<String,Object> getLastRecord() { return lastRecord;}
 
     /**
      * Method used to set Syslog instance to Downloader and Parser instances of this logger

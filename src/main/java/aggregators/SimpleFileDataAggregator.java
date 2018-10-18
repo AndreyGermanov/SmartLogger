@@ -53,10 +53,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
 
     // Full path to destination folder to which destination aggregated data will be written. If empty, then full path
     // will be automatically calculated based on application cache path
-    private String filePath = "";
-
-    // Link to internal logger, which used to write error, warning or information messages while aggregating data
-    private ISyslog syslog;
+    private String destinationPath = "";
 
     /**
      * Class constructors
@@ -65,6 +62,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         HashMap<String,Object> config = new HashMap<>();
         config.put("name",name);
         config.put("sourcePath",sourcePath);
+        config.put("destinationPath",destinationPath);
         this.configure(config);
     }
 
@@ -332,14 +330,12 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      * @return Full path to file in filesystem
      */
     String getAggregatorPath() {
-        String cachePath = LoggerApplication.getInstance().getCachePath();
-        if (this.filePath.isEmpty()) {
-            return cachePath + "/aggregators/"+this.getName();
-        } else {
-            Path path = Paths.get(this.filePath);
-            if (path.isAbsolute()) return this.filePath;
-            return cachePath + "/" + this.filePath;
-        }
+        String resultPath = destinationPath;
+        if (resultPath.isEmpty())
+            resultPath = LoggerApplication.getInstance().getCachePath()+"/"+getCollectionType()+"/"+this.getName();
+        if (!Paths.get(resultPath).isAbsolute())
+            resultPath = LoggerApplication.getInstance().getCachePath() + "/" + resultPath;
+        return resultPath;
     }
 
     /**
@@ -353,17 +349,9 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         String timestampStr = record.get("timestamp").toString();
         long timestamp = new Long(timestampStr);
         LocalDateTime date = LocalDateTime.ofEpochSecond(timestamp,0,ZoneOffset.UTC);
-        String path = basePath +  "/data/"+ date.getYear() + "/" + date.getMonthValue() + "/" +
+        String path = basePath +  "/"+ date.getYear() + "/" + date.getMonthValue() + "/" +
                 date.getDayOfMonth() + "/" + date.getHour() + "/" + date.getMinute() + "/" + date.getSecond() + ".json";
         return path;
-    }
-
-    /**
-     * Returns path to folder, to which current aggregator writes logs with errors, warnings etc.
-     */
-    @Override
-    public String getSyslogPath() {
-        return getAggregatorPath() + "/logs";
     }
 
     /**

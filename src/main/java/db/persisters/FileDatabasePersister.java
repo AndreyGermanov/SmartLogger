@@ -5,15 +5,10 @@ import config.ConfigManager;
 import db.adapters.DatabaseAdapter;
 import db.adapters.IDatabaseAdapter;
 import main.ISyslog;
-import main.LoggerApplication;
 import main.Syslog;
 import readers.FileDataReader;
 import readers.IDataReader;
 import utils.DataMap;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,8 +31,6 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
     // How many rows should this persister write to database per single run. If 0, then will process all data in
     // source folder
     private int rowsPerRun = 0;
-    // Link to system logger, used to store system error messages
-    private ISyslog syslog;
     // Path to folder, in which this persister write temporary status information, like last processed row
     private String statusPath = "";
     // Last processed record
@@ -111,7 +104,7 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
      */
     private ArrayList<HashMap<String,Object>> prepareData() {
         if (sourceDataReader == null) return null;
-        lastRecord = readLastRecord();
+        readAndSetLastRecord();
         Long startDate = 0L;
         if (lastRecord != null) startDate = Long.parseLong(lastRecord.get("timestamp").toString());
         if (startDate > 0) startDate +=1;
@@ -148,46 +141,26 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
     private void setLastRecord(HashMap<String,Object> record) { lastRecord = (HashMap<String,Object>)record.clone();};
 
     /**
-     * Method used to read last written record from file
-     * @return Record
+     * Returns serialized information about last record as a string, ready to write to file in "statusPath"
+     * @return String representation of last record or null if not able to produce this string
      */
-    private HashMap<String,Object> readLastRecord() {
-        Path statusPath = Paths.get(this.getStatusPath()+"/last_record");
-        if (!Files.exists(statusPath)) return null;
-        try {
-            Gson gson = new Gson();
-            BufferedReader reader = Files.newBufferedReader(statusPath);
-            HashMap<String,Object> result = gson.fromJson(reader.readLine(),HashMap.class);
-            reader.close();
-            return result;
-        } catch (IOException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not read last record from '"+statusPath.toString()+"' file",
-                    this.getClass().getName(),"readLastRecord");
-        } catch (Exception e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not parse last record value from '"+statusPath.toString()+"' file.",
-                    this.getClass().getName(),"readLastRecord");
-        }
-        return null;
+    protected String getLastRecordString() {
+        if (lastRecord == null) return null;
+        Gson gson = new Gson();
+        return gson.toJson(lastRecord);
     }
 
     /**
-     * Method used to write last written record to file as JSON object
+     * Method used to get string value of last record from status file, parse it and setup
      */
-    private void writeLastRecord() {
-        if (lastRecord == null) return;
-        Path statusPath = Paths.get(this.getStatusPath()+"/last_record");
-        try {
-            Gson gson = new Gson();
-            if (!Files.exists(statusPath.getParent())) Files.createDirectories(statusPath.getParent());
-            Files.deleteIfExists(statusPath);
-            BufferedWriter writer = Files.newBufferedWriter(statusPath,StandardOpenOption.CREATE_NEW);
-            writer.write(gson.toJson(lastRecord));
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            syslog.log(ISyslog.LogLevel.ERROR,"Could not write last record '"+lastRecord.toString()+
-                    "' to file '"+statusPath.toString()+"'",this.getClass().getName(),"writeLastRecord");
+    protected void readAndSetLastRecord() {
+        String result = readLastRecord();
+        if (result == null) {
+            lastRecord = null;
+            return;
         }
+        Gson gson = new Gson();
+        setLastRecord(gson.fromJson(result,HashMap.class));
     }
 
     @Override
@@ -195,22 +168,4 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
         return name;
     }
 
-    @Override
-    public String getSyslogPath() {
-        return LoggerApplication.getInstance().getCachePath()+"/logs/db/"+this.getName()+"/";
-    }
-
-    public void setSyslog(ISyslog syslog) {
-        this.syslog = syslog;
-    }
-
-    /**
-     * Method returns path to status folder, which persister used to write status files (as timestamp of last
-     * written record)
-     * @return Full path
-     */
-    private String getStatusPath() {
-        if (statusPath.isEmpty()) return LoggerApplication.getInstance().getCachePath()+"/persisters/"+this.getName()+"/";
-        return statusPath;
-    }
 }
