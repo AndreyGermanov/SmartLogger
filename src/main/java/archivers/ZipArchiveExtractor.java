@@ -16,7 +16,7 @@ public class ZipArchiveExtractor extends FileCopyDataArchiver {
      *
      * @param config Configuration object
      */
-    ZipArchiveExtractor(HashMap<String, Object> config) {
+    public ZipArchiveExtractor(HashMap<String, Object> config) {
         super(config);
     }
 

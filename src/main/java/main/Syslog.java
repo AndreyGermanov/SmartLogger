@@ -60,6 +60,7 @@ public class Syslog implements ISyslog {
             writer.write(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")) + " - " + owner.getName() + " - " +
                     message + " ("+className+","+methodName+")\n");
             writer.flush();
+            writer.close();
         } catch (IOException e) {
             System.out.println("Syslog error: "+e.getMessage());
             e.printStackTrace();

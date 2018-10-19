@@ -36,7 +36,7 @@ public class MongoDatabaseAdapter extends DatabaseAdapter {
     public void configure(HashMap<String,Object> config) {
         super.configure(config);
         this.host = config.getOrDefault("host",this.host).toString();
-        this.port = Integer.valueOf(config.getOrDefault("port",this.port).toString());
+        this.port = Double.valueOf(config.getOrDefault("port",this.port).toString()).intValue();
         this.database = config.getOrDefault("database",this.database).toString();
     }
 

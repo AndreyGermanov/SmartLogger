@@ -58,7 +58,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * @param name Unique name
      * @return Constructed archiver object
      */
-    static IDataArchiver create(String name) {
+    public static IDataArchiver create(String name) {
         if (name.isEmpty()) return null;
         HashMap<String,Object> config = ConfigManager.getInstance().getDataArchiver(name);
         return create(config);
@@ -69,7 +69,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * @param config Configuration object
      * @return Constructed archiver object
      */
-    static IDataArchiver create(HashMap<String,Object> config) {
+    public static IDataArchiver create(HashMap<String,Object> config) {
         if (config == null) return null;
         String type = config.getOrDefault("type","").toString();
         if (type.isEmpty()) return null;

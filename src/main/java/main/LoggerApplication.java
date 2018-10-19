@@ -13,6 +13,7 @@ import java.util.HashMap;
  */
 public class LoggerApplication {
 
+    private String name = "defaultNode";
     private String appPath = "";
     private String cachePath = "cache";
     private String logPath = "logs";
@@ -34,8 +35,10 @@ public class LoggerApplication {
     public String getStatusPath() { return getAbsolutePath(statusPath);}
 
     public String getAppPath() {
-        if (appPath.isEmpty()) return System.getProperty("user.dir");
-        return appPath;
+        String resultPath = appPath;
+        if (resultPath.isEmpty()) resultPath = System.getProperty("user.dir");
+        if (!Paths.get(resultPath).isAbsolute()) resultPath = System.getProperty("user.dir")+"/"+resultPath;
+        return resultPath;
     }
 
     public String getAbsolutePath(String sourceDir) {
@@ -46,6 +49,7 @@ public class LoggerApplication {
     }
 
     public void configure(HashMap<String,Object> config) {
+        name = config.getOrDefault("name",name).toString();
         appPath = config.getOrDefault("appPath",appPath).toString();
         cachePath = config.getOrDefault("cachePath",cachePath).toString();
         logPath = config.getOrDefault("logPath",logPath).toString();

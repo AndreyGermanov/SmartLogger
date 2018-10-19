@@ -184,6 +184,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
             String json = getJson(record);
             recordFile.write(json);
             recordFile.flush();
+            recordFile.close();
             lastRecord = (HashMap<String,Object>)record.clone();
             writeLastRecord();
         } catch (IOException e) {
@@ -201,7 +202,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         String timestampStr = record.get("timestamp").toString();
         long timestamp = new Long(timestampStr);
         LocalDateTime date = LocalDateTime.ofEpochSecond(timestamp,0,ZoneOffset.UTC);
-        return getDestinationPath() + "/" + this.getName() + "/data/"+ date.getYear() + "/" + date.getMonthValue() + "/" +
+        return getDestinationPath() + "/" + date.getYear() + "/" + date.getMonthValue() + "/" +
                 date.getDayOfMonth() + "/" + date.getHour() + "/" + date.getMinute() + "/" + date.getSecond() + ".json";
     }
 
@@ -226,7 +227,6 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
             resultPath = LoggerApplication.getInstance().getCachePath()+"/loggers/"+this.getName();
         if (!Paths.get(resultPath).isAbsolute())
             resultPath = LoggerApplication.getInstance().getCachePath()+"/loggers/"+this.getName() + resultPath;
-        System.out.println(resultPath);
         return resultPath;
     }
 

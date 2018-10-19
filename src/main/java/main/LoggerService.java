@@ -1,6 +1,8 @@
 package main;
 
 import aggregators.SimpleFileDataAggregator;
+import archivers.DataArchiver;
+import archivers.ZipArchiveExtractor;
 import config.ConfigManager;
 import cronjobs.Cronjob;
 import cronjobs.ICronjobTask;
@@ -46,7 +48,7 @@ public class LoggerService {
      */
     public void start() {
         if (started) return;
-        String[] collections = {"loggers","aggregators","persisters"};
+        String[] collections = {"loggers","aggregators","persisters","archivers","extractors"};
         Arrays.stream(collections).forEach(this::startCronjobs);
         this.started = true;
     }
@@ -96,6 +98,10 @@ public class LoggerService {
                 return new SimpleFileDataAggregator(objectConfig);
             case "persisters":
                 return new FileDatabasePersister(objectConfig);
+            case "archivers":
+                return DataArchiver.create(objectConfig);
+            case "extractors":
+                return new ZipArchiveExtractor(objectConfig);
             default:
                 return null;
         }

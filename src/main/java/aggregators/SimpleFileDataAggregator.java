@@ -82,6 +82,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         super.configure(config);
         this.name = config.getOrDefault("name",this.name).toString();
         this.sourcePath = config.getOrDefault("sourcePath",this.sourcePath).toString();
+        this.destinationPath = config.getOrDefault("destinationPath",this.destinationPath).toString();
         this.fieldDefs = (HashMap<String,HashMap<String,Object>>)config.getOrDefault("fields",this.fieldDefs);
         this.fillDataGaps = (boolean)config.getOrDefault("fillDataGaps",this.fillDataGaps);
         this.aggregationPeriod = Double.valueOf(config.getOrDefault("aggregationPeriod",this.aggregationPeriod).toString()).intValue();
@@ -277,10 +278,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             stats.count += 1;
             if (decimalValue>stats.max) stats.max = decimalValue;
             if (decimalValue<stats.min) stats.min = decimalValue;
-        } catch (NumberFormatException e) {
-            syslog.log(Syslog.LogLevel.WARNING,"Could not parse field value '"+value+"'",this.getClass().getName(),
-                    "addEntryToFieldStats");
-        }
+        } catch (Exception e) { }
         return stats;
     }
 

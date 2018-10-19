@@ -18,7 +18,7 @@ public class SendFtpDataArchiverTest {
         HashMap<String, Object> config = DataMap.create("name", "ftp_sender",
                 "sourcePath", "/home/andrey/logger/test/archivers/aggregate_test",
                 "host", "portal.it-port.ru",
-                "port",21,"username","","password","",
+                "port",21,"username","","password","","rootPath","",
                 "destinationPath", destinationDir);
         IDataArchiver archiver = new SendFtpDataArchiver(config);
         System.out.println("PROCESSED " + archiver.archive() + " files");

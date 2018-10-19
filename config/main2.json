@@ -1,0 +1,10 @@
+{
+  "loggers": "#include loggers/loggers.json",
+  "aggregators": "#include aggregators/aggregators.json",
+  "adapters": "#include adapters/adapters.json",
+  "persisters": "#include persisters/persisters.json",
+  "appPath": "/home/andrey/smartLogger",
+  "statusPath": "status",
+  "cachePath": "cache",
+  "logPath": "logs"
+}
