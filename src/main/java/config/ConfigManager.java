@@ -93,6 +93,7 @@ public class ConfigManager implements ISyslog.Loggable {
         try {
             BufferedReader reader = Files.newBufferedReader(path);
             String configString = reader.lines().reduce((s,s1) -> s+=s1).orElse("");
+            reader.close();
             Gson gson = new Gson();
             HashMap<String,Object>  configMap = gson.fromJson(configString,HashMap.class);
             if (configMap == null) return null;

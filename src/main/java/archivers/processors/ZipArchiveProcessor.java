@@ -56,11 +56,11 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
      */
     @Override
     public void processFile(Path sourceFile) {
-        try {
+        try (InputStream stream = Files.newInputStream(sourceFile);) {
             ZipEntry entry = new ZipEntry(sourceFile.toString().replace(archiver.getSourcePath()+"/",""));
             if (Files.isDirectory(sourceFile)) return;
             archive.putNextEntry(entry);
-            InputStream stream = Files.newInputStream(sourceFile);
+
             int bufSize = 1024;
             byte[] buf = new byte[bufSize];
             int length;
@@ -86,8 +86,10 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
                 archive.close();
                 Files.move(Paths.get(getArchiveFilePath()+".tmp"),Paths.get(getArchiveFilePath()));
             }
-            else
-                Files.deleteIfExists(Paths.get(getArchiveFilePath()+".tmp"));
+            else {
+                archive.close();
+                Files.deleteIfExists(Paths.get(getArchiveFilePath() + ".tmp"));
+            }
         } catch (IOException e) {
             e.printStackTrace();
             syslog.log(ISyslog.LogLevel.ERROR,"Could not finish writing archive file '"+getArchiveFilePath()+". "+
@@ -102,8 +104,7 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
      */
     public long extractArchive(Path zipFile) {
         long extractedFilesCount = 0L;
-        try {
-            ZipInputStream is = new ZipInputStream(new FileInputStream(zipFile.toString()));
+        try (ZipInputStream is = new ZipInputStream(new FileInputStream(zipFile.toString()))) {
             ZipEntry entry = is.getNextEntry();
             byte[] buffer = new byte[1024];
             while (entry != null) {
@@ -130,7 +131,7 @@ public class ZipArchiveProcessor extends ArchiveProcessor {
      */
     public String getArchiveName() {
         if (archiveName.isEmpty()) {
-            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             archiveName = archiver.getName()+"_"+LocalDateTime.now().format(fmt);
         }
         return archiveName;

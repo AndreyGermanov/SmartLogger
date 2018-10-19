@@ -150,6 +150,7 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             BufferedWriter writer = Files.newBufferedWriter(path,StandardOpenOption.CREATE_NEW);
             writer.write((new Gson()).toJson(aggregate));
             writer.flush();
+            writer.close();
         } catch (Exception e) {
             syslog.logException(e,this,"aggregateInterval");
         }

@@ -57,7 +57,7 @@ public class Syslog implements ISyslog {
             if (Files.exists(filePath)) openOption = StandardOpenOption.APPEND;
             BufferedWriter writer = Files.newBufferedWriter(filePath, openOption);
             LocalDateTime now = LocalDateTime.now();
-            writer.write(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss")) + " - " + owner.getName() + " - " +
+            writer.write(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " - " + owner.getName() + " - " +
                     message + " ("+className+","+methodName+")\n");
             writer.flush();
             writer.close();

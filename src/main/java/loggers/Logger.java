@@ -180,14 +180,15 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         Path path = Paths.get(recordPath);
         try {
             if (!Files.exists(path.getParent())) Files.createDirectories(path.getParent());
-            BufferedWriter recordFile = Files.newBufferedWriter(path);
             String json = getJson(record);
+            BufferedWriter recordFile = Files.newBufferedWriter(path);
             recordFile.write(json);
             recordFile.flush();
             recordFile.close();
             lastRecord = (HashMap<String,Object>)record.clone();
             writeLastRecord();
         } catch (IOException e) {
+            e.printStackTrace();
             syslog.logException(e,this,"writeRecord");
         }
     }

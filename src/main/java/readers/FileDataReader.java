@@ -2,6 +2,8 @@ package readers;
 
 import com.google.gson.Gson;
 import main.ISyslog;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -224,9 +226,9 @@ public class FileDataReader implements IDataReader {
      */
     private HashMap<String,Object> getDataRecord(Path path) {
         Gson gson = new Gson();
-        try {
+        try (BufferedReader reader = Files.newBufferedReader(path)) {
             if (!Files.exists(path) || Files.size(path) == 0) return null;
-            String content = Files.newBufferedReader(path).readLine();
+            String content = reader.readLine();
             if (content.isEmpty()) return null;
             HashMap<String,Object> record = gson.fromJson(content,HashMap.class);
             if (record.size()==0 || !record.containsKey("timestamp")) return null;

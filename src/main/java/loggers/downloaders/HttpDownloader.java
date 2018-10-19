@@ -55,10 +55,9 @@ public abstract class HttpDownloader extends Downloader {
      */
     public String download() {
         String result = "";
-        try {
-            HttpURLConnection connection = connect();
-            if (connection == null) return result;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        HttpURLConnection connection = connect();
+        if (connection == null) return result;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             result = reader.lines().reduce("",(prevResult,line) -> prevResult+line);
             connection.disconnect();
         } catch (Exception e) {

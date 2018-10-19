@@ -103,11 +103,8 @@ public abstract class CronjobTask implements ICronjobTask {
     protected String readLastRecord() {
         Path statusPath = Paths.get(this.getStatusPath()+"/last_record");
         if (!Files.exists(statusPath)) return null;
-        try {
-            BufferedReader reader = Files.newBufferedReader(statusPath);
-            String result = reader.readLine();
-            reader.close();
-            return result;
+        try (BufferedReader reader = Files.newBufferedReader(statusPath)) {
+            return reader.readLine();
         } catch (IOException e) {
             syslog.log(ISyslog.LogLevel.ERROR,"Could not read last record from '"+statusPath.toString()+"' file",
                     this.getClass().getName(),"readLastRecord");
