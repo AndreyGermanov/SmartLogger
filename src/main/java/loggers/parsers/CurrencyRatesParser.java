@@ -1,9 +1,7 @@
 package loggers.parsers;
 
 import com.google.gson.internal.LinkedTreeMap;
-import com.sun.jna.FunctionMapper;
 import utils.DataMap;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -13,12 +11,12 @@ import java.util.HashMap;
 public class CurrencyRatesParser extends JsonParser {
 
     public void initFields() {
-        parseBiFunction biFunc = this::parseCurrencyRate;
+        ParseBiFunction biFunc = this::parseCurrencyRate;
         fieldDefs = DataMap.create(
                 "timestamp",DataMap.create(
                     "name","timestamp",
                     "type","integer",
-                    "parseFunction", (parseFunction)this::parseCurrencyTimestamp
+                    "parseFunction", (ParseFunction)this::parseCurrencyTimestamp
                 ),
                 "AUD", DataMap.create(
                     "name", "AUD", "inArray", true, "type","decimal", "parseFunction", biFunc

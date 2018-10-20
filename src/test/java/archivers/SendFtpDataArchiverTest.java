@@ -20,7 +20,8 @@ public class SendFtpDataArchiverTest {
                 "host", "portal.it-port.ru",
                 "port",21,"username","","password","","rootPath","",
                 "destinationPath", destinationDir);
-        IDataArchiver archiver = new SendFtpDataArchiver(config);
+        IDataArchiver archiver = DataArchiver.create("yandex_weather_golubitskay_10_ftp_send");
+        //IDataArchiver archiver = new SendFtpDataArchiver(config);
         System.out.println("PROCESSED " + archiver.archive() + " files");
     }
 }

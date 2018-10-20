@@ -17,7 +17,8 @@ public class CurrencyRatesLoggerTest {
 
     @Test
     public void log() {
-        CurrencyRatesLogger logger = new CurrencyRatesLogger(DataMap.create("name","currency_logger","base","USD"));
+        CurrencyRatesLogger logger = new CurrencyRatesLogger(DataMap.create("name","currency_logger","base","USD",
+                "shouldWriteDuplicates", false));
         logger.log();
 
     }

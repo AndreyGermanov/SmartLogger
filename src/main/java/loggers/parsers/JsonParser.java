@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-interface parseFunction extends Function<HashMap<String,Object>,String> {
+interface ParseFunction {
     String apply(HashMap<String,Object> inputJson);
 }
 
-interface parseBiFunction extends BiFunction<String,HashMap<String,Object>,String> {
+interface ParseBiFunction {
     String apply(String fieldName,HashMap<String,Object> inputJson);
 }
 
@@ -42,25 +42,27 @@ public abstract class JsonParser extends Parser {
     }
 
     void putField(HashMap<String,Object> field, HashMap<String,Object> result) {
-        String rawResult;
-        String fieldName = field.get("name").toString();
-        if (field.containsKey("inArray") && Boolean.parseBoolean(field.getOrDefault("inArray",false).toString())) {
-            if (!(field.get("parseFunction") instanceof BiFunction<?,?,?>)) return;
-            BiFunction<String,HashMap<String,Object>,String> func = (BiFunction<String,HashMap<String,Object>,String>)field.get("parseFunction");
-            rawResult = func.apply(fieldName,inputJson);
-        } else {
-            if (!(field.get("parseFunction") instanceof Function<?,?>)) return;
-            Function<HashMap<String,Object>,String> func = (Function<HashMap<String,Object>,String>)field.get("parseFunction");
-            rawResult = func.apply(inputJson);
-        }
+        String rawResult = getRawFieldValue(field);
         if (rawResult == null) return;
-        String fieldType = field.get("type").toString();
-        switch (fieldType) {
+        String fieldName = field.get("name").toString();
+        switch (field.get("type").toString()) {
             case "string": result.put(fieldName,rawResult);break;
             case "integer": result.put(fieldName,Long.parseLong(rawResult));break;
             case "decimal": result.put(fieldName,Double.parseDouble(rawResult));break;
             case "boolean": result.put(fieldName,Boolean.parseBoolean(rawResult));
         }
+    }
+
+    private String getRawFieldValue(HashMap<String,Object> field) {
+        String fieldName = field.get("name").toString();
+        if (Boolean.parseBoolean(field.getOrDefault("inArray",false).toString())) {
+            if (!(field.get("parseFunction") instanceof ParseBiFunction)) return null;
+            ParseBiFunction func = (ParseBiFunction)field.get("parseFunction");
+            return func.apply(fieldName,inputJson);
+        }
+        if (!(field.get("parseFunction") instanceof ParseFunction)) return null;
+        ParseFunction func = (ParseFunction)field.get("parseFunction");
+        return func.apply(inputJson);
     }
 
     public String parseDoubleField(String fieldName,LinkedTreeMap<String,Object> inputJson) {

@@ -81,7 +81,8 @@
       "password": "",
       "rootPath": "yandex_weather_golubitskaya_10",
       "connectionTimeout": 60,
-      "socketTimeout": 20
+      "socketTimeout": 20,
+      "filterRegex": "\\.zip$"
     }
   }
 }

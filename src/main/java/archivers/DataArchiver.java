@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 /**
  * Data Archiver base class. Used to create Data archiver components. Data archiver used to archive all files
@@ -51,6 +52,8 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     private long archivedFilesCount = 0L;
     // Caches information about summary size of data processed per current run
     private long archivedFilesSize = 0L;
+    // Regular expression which used as a filter for filenames, that should be processed by archiver
+    private String filterRegex = "";
 
     /**
      * Factory method, used to build concrete Data Archiver object, based on provided unique name
@@ -123,6 +126,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         maxArchiveSize = Long.parseLong(config.getOrDefault("maxArchiveSize",maxArchiveFilesCount).toString());
         maxArchiveFilesCount = Long.parseLong(config.getOrDefault("maxArchiveFilesCount",maxArchiveFilesCount).toString());
         removeSourceAfterArchive = Boolean.parseBoolean(config.getOrDefault("removeSourceAfterArchive",removeSourceAfterArchive).toString());
+        filterRegex = config.getOrDefault("filterRegex",filterRegex).toString();
         if (syslog == null) syslog = new Syslog(this);
         processor = ArchiveProcessor.create(config.getOrDefault("type","").toString(),this);
         if (processor != null) processor.configure(config);
@@ -186,13 +190,14 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * @return True if file should be archived or false otherwise
      */
     public boolean checkFile(Path file) {
-        if (!Files.isRegularFile(file)) return false;
+        if (!filterRegex.isEmpty() && !Pattern.compile(filterRegex).matcher(file.toString()).find()) return false;
         if (file.toString().endsWith(".tmp")) return false;
         if (file.toString().equals(lastFileName)) return false;
         if (lastFileTimestamp>0 && getFileTimestamp(file) < lastFileTimestamp) return false;
         if (getFileTimestamp(file).equals(lastFileTimestamp) &&
                 file.toString().compareTo(lastFileName)<0) return false;
         try {
+            if (Files.size(file) == 0) return false;
             long fileSize = Files.size(file);
             if (maxArchiveSize>0 && getArchivedFilesSize()+fileSize > maxArchiveSize) {
                 return false;

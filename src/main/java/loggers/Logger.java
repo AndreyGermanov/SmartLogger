@@ -16,7 +16,10 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Base class for Data loggers.
@@ -41,6 +44,9 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
     private String destinationPath = "";
     /// Path, to which logger will write status information, as last record
     private String statusPath = "";
+    // List of field names, which should be logged to file. If empty or null, then
+    // all fields will be saved
+    private List<String> fieldsToLog;
 
     /**
      * Factory method, used to get instanse of logger of specified type
@@ -89,6 +95,9 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         this.shouldWriteDuplicates = Boolean.valueOf(config.getOrDefault("shouldWriteDuplicates","false").toString());
         this.destinationPath = config.getOrDefault("destinationPath",destinationPath).toString();
         this.statusPath = config.getOrDefault("statusPath",statusPath).toString();
+        String fieldsToLog = config.getOrDefault("fieldsToLog","").toString();
+        if (!fieldsToLog.isEmpty())
+            this.fieldsToLog = Arrays.asList(fieldsToLog.split(","));
         if (this.syslog == null) this.syslog = new Syslog(this);
         this.downloader.configure(config);
         this.parser.configure(config);
@@ -110,8 +119,9 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
      */
     public void log() {
         HashMap<String,Object> record = readRecord();
+        if (!shouldWriteDuplicates) record = getChangedRecord(record);
         if (record == null) return;
-        if (shouldWriteDuplicates || isRecordChanged(record)) writeRecord(record);
+        writeRecord(record);
     }
 
     /**
@@ -126,7 +136,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
             return null;
         }
         parser.setInputString(source);
-        HashMap<String,Object> result = (HashMap<String,Object>)parser.parse();
+        HashMap<String,Object> result = getFilteredRecord((HashMap<String,Object>)parser.parse());
         if (result.isEmpty()) {
             syslog.log(Syslog.LogLevel.WARNING,"Empty record returned after parsing",
                     this.getClass().getName(),"readRecord");
@@ -134,6 +144,13 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         }
         result.putIfAbsent("timestamp",String.valueOf(Instant.now().getEpochSecond()));
         return result;
+    }
+
+    public HashMap<String,Object> getFilteredRecord(HashMap<String,Object> record) {
+        if (record == null || fieldsToLog == null || fieldsToLog.isEmpty()) return record;
+        return record.keySet().stream()
+                .filter(key -> fieldsToLog.contains(key) || key.equals("timestamp"))
+                .collect(Collectors.toMap(key->key, record::get,(item1, item2) -> item1,HashMap::new));
     }
 
     /**
@@ -153,6 +170,27 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
             if (!lastRecord.get(key).equals(record.get(key))) return true;
         }
         return false;
+    }
+
+    /**
+     * Method compares provided record with last processed record and returns new record
+     * with only fields that changed
+     * @param record Source record
+     * @return Resulting record with changed fields
+     */
+    private HashMap<String,Object> getChangedRecord(HashMap<String,Object> record) {
+        if (record == null) return null;
+        if (lastRecord == null) readAndSetLastRecord();
+        if (lastRecord == null) return record;
+        HashMap<String,Object> resultRecord = new HashMap<>();
+        for (String key: record.keySet()) {
+            if (key == "timestamp") continue;
+            if (!lastRecord.containsKey(key) || !lastRecord.get(key).equals(record.get(key)))
+                resultRecord.put(key,record.get(key));
+        }
+        if (resultRecord.size()==0) return null;
+        resultRecord.put("timestamp",record.get("timestamp"));
+        return resultRecord;
     }
 
     /**
