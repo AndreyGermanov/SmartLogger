@@ -1,0 +1,1 @@
+https://ratesapi.io/api/latest?base=USD

@@ -90,6 +90,9 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         this.destinationPath = config.getOrDefault("destinationPath",destinationPath).toString();
         this.statusPath = config.getOrDefault("statusPath",statusPath).toString();
         if (this.syslog == null) this.syslog = new Syslog(this);
+        this.downloader.configure(config);
+        this.parser.configure(config);
+        this.propagateSyslog();
     }
 
     /**
@@ -129,7 +132,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
                     this.getClass().getName(),"readRecord");
             return null;
         }
-        result.put("timestamp",String.valueOf(Instant.now().getEpochSecond()));
+        result.putIfAbsent("timestamp",String.valueOf(Instant.now().getEpochSecond()));
         return result;
     }
 

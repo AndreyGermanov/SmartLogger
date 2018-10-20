@@ -6,6 +6,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import utils.DataMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +21,9 @@ class YandexWeatherLoggerMoc extends YandexWeatherLogger {
 
     YandexWeatherLoggerMoc(String name, String placeName) {
         super(name, placeName);
+    }
+    YandexWeatherLoggerMoc(HashMap<String,Object> config) {
+        super(config);
     }
 
     public HashMap<String,Object> fakeLastRecord;
@@ -41,7 +45,7 @@ public class YandexWeatherLoggerTest {
         LoggerApplication.getInstance().configure(configManager.getConfig());
     }
 
-    private YandexWeatherLoggerMoc logger = new YandexWeatherLoggerMoc("yandex_weather_golubitskaya1","golubitskaya");
+    private YandexWeatherLoggerMoc logger = new YandexWeatherLoggerMoc(DataMap.create("name","yandex_weather_golubitskaya","place","golubitskaya"));
     private Gson gson = new Gson();
 
     @Test

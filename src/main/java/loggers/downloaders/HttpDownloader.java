@@ -22,7 +22,7 @@ public abstract class HttpDownloader extends Downloader {
      */
     protected URL getConnectionUrl() {
         try {
-            return new URL(this.url);
+            return new URL(this.getUrl());
         } catch (Exception e) {
             this.syslog.logException(e, this, "getConnectionUrl");
             return null;

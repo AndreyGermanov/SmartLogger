@@ -24,7 +24,7 @@ public abstract class HTMLParser extends Parser {
      * Method, which descendants use to init configuration of fields, which parser should extract
      * from input string
      */
-    abstract void initFields();
+    public abstract void initFields();
 
     /**
      * Helper method which adds configuration of single field to array of field definitions

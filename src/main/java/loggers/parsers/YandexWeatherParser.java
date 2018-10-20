@@ -21,7 +21,7 @@ public class YandexWeatherParser extends HTMLParser {
      * Method, which descendants use to init configuration of fields, which parser should extract
      * from input string
      */
-    void initFields() {
+    public void initFields() {
         initField("temperature",Double.class,"<div class=\"temp fact__temp\"><span class=\"temp__value\">" +
                 ".*?([0-9\\.\\,]*)</span><span class=\"temp__unit i-font i-font_face_yandex-sans-text-medium\">°</span></div>");
         initField("water_temperature",Double.class,"<dl class=\"term term_orient_v fact__water\">" +

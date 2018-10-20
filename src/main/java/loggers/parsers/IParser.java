@@ -10,4 +10,5 @@ public interface IParser {
     HashMap<String,?> parse();
     void setInputString(String inputString);
     void setSyslog(ISyslog syslog);
+    void configure(HashMap<String,Object> config);
 }

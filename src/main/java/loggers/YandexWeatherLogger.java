@@ -27,15 +27,4 @@ class YandexWeatherLogger extends Logger {
         this.propagateSyslog();
         this.configure(config);
     }
-
-    /**
-     * Method used to apply configuration to data logger instance.
-     * @param config: Configuration object
-     */
-    public void configure(HashMap<String,Object> config) {
-        super.configure(config);
-        ((YandexWeatherDownloader)this.downloader).setPlaceName(config.get("placeName").toString());
-        this.propagateSyslog();
-
-    }
 }

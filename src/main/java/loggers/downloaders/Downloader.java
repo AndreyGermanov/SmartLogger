@@ -2,6 +2,8 @@ package loggers.downloaders;
 
 import main.ISyslog;
 
+import java.util.HashMap;
+
 /**
  * Base class for all data downloaders.
  */
@@ -22,4 +24,6 @@ public abstract class Downloader implements IDownloader {
      * @param syslog Link to syslog instance
      */
     public void setSyslog(ISyslog syslog) { this.syslog = syslog; }
+
+    public void configure(HashMap<String,Object> config) {}
 }

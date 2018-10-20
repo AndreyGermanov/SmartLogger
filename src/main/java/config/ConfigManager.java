@@ -23,6 +23,8 @@ public class ConfigManager implements ISyslog.Loggable {
     private static ConfigManager instance;
     // Link to loaded configuration object
     private HashMap<String,Object> config;
+    // Path to main config file
+    private String configPath = "config/main.json";
 
     /**
      * Class constructor
@@ -39,13 +41,21 @@ public class ConfigManager implements ISyslog.Loggable {
     }
 
     /**
+     * Method used to set path to main config file, which overrides default config path "config/main.json"
+     * @param configPath Path to config file
+     */
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
+    }
+
+    /**
      * Method which used to load configuration from files to "config" object
      */
     public void loadConfig() {
-        Path path = Paths.get("config/main.json").toAbsolutePath();
+        Path path = Paths.get(configPath).toAbsolutePath();
         if (!Files.exists(path)) {
-            config = getDefaultConfig();
-            writeConfigToFile(path, config);
+            System.err.println("Config file not found: '"+path.toString()+"'");
+            System.exit(0);
         } else {
             config = readConfigFile(path);
         }
@@ -59,7 +69,9 @@ public class ConfigManager implements ISyslog.Loggable {
         return DataMap.create("loggers",new HashMap<String,Object>(),
                 "aggregators", new HashMap<String,Object>(),
                 "adapters", new HashMap<String,Object>(),
-                "persisters", new HashMap<String,Object>());
+                "persisters", new HashMap<String,Object>(),
+                "archivers", new HashMap<String,Object>(),
+                "extractors", new HashMap<String,Object>());
     }
 
     /**

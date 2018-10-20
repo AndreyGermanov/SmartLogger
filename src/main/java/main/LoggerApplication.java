@@ -69,13 +69,13 @@ public class LoggerApplication {
         return application;
     }
 
-    public void run() {
+    public void run(String[] args) {
         ConfigManager configManager = ConfigManager.getInstance();
+        if (args.length>=1) configManager.setConfigPath(args[0]);
         configManager.loadConfig();
         this.configure(configManager.getConfig());
         LoggerService.getInstance().start();
         System.out.println("Application started ...");
-
     }
 
     /**
@@ -83,6 +83,6 @@ public class LoggerApplication {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
-        LoggerApplication.getInstance().run();
+        LoggerApplication.getInstance().run(args);
     }
 }

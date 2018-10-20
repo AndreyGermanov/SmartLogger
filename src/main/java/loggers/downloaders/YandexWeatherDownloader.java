@@ -2,6 +2,7 @@ package loggers.downloaders;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 
 /**
  * Yandex Weather data loader. Used by Yandex Weather logger to download data about weather.
@@ -21,17 +22,9 @@ public class YandexWeatherDownloader extends HttpDownloader {
         this.placeName = placeName;
     }
 
-    /**
-     * Method used to construct URL to download data from
-     * @return constructed URL or null if impossible to create valid URL from source parts
-     */
-    public URL getConnectionUrl() {
-        try {
-            return new URL(this.url + "/" + this.placeName);
-        } catch (MalformedURLException e) {
-            this.syslog.logException(e,this,"getConnectionUrl");
-            return null;
-        }
+    public void configure(HashMap<String,Object> config) {
+        super.configure(config);
+        placeName = config.getOrDefault("place",placeName).toString();
     }
 
     /**
@@ -49,5 +42,7 @@ public class YandexWeatherDownloader extends HttpDownloader {
     String getPlaceName() {
         return placeName;
     }
+
+    public String getUrl() { return this.url+"/"+this.placeName;}
 
 }

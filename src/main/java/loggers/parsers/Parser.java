@@ -21,6 +21,8 @@ public abstract class Parser implements IParser {
     protected ISyslog syslog;
 
 
+    public abstract void initFields();
+
     /**
      * Main method used to parse record.
      * @return HashMap<String,?>: Hashmap with all extracted fields and their values
@@ -40,6 +42,8 @@ public abstract class Parser implements IParser {
      * @param syslog
      */
     public void setSyslog(ISyslog syslog) { this.syslog = syslog; }
+
+    public void configure(HashMap<String,Object> config) {};
 
     /**
      * Returns current input string, which parser uses to work with
