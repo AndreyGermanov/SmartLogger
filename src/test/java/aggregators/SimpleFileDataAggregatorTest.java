@@ -17,7 +17,7 @@ public class SimpleFileDataAggregatorTest {
 
     @Test
     public void aggregate() {
-        SimpleFileDataAggregator aggregator = new SimpleFileDataAggregator("yandex_weather_golubitskaya_10");
+        SimpleFileDataAggregator aggregator = new SimpleFileDataAggregator("yandex_weather_golubitskaya_900");
         aggregator.aggregate();
     }
 }

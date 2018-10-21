@@ -1,0 +1,171 @@
+{
+  "idField" :"id",
+  "fields": {
+    "id": {
+      "name": "id",
+      "type": "integer"
+    },
+    "timestamp": {
+      "name": "timestamp",
+      "type": "integer"
+    },
+    "temperature_avg": {
+      "name": "temperature_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "temperature_min": {
+      "name": "temperature_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "temperature_max": {
+      "name": "temperature_max",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "temperature_first": {
+      "name": "temperature_first",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "temperature_last": {
+      "name": "temperature_last",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "water_temperature_avg": {
+      "name": "water_temperature_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "water_temperature_min": {
+      "name": "water_temperature_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "water_temperature_max": {
+      "name": "water_temperature_max",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "water_temperature_first": {
+      "name": "water_temperature_first",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "water_temperature_last": {
+      "name": "water_temperature_last",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "humidity_avg": {
+      "name": "humidity_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "humidity_min": {
+      "name": "humidity_min",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "humidity_max": {
+      "name": "humidity_max",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "humidity_first": {
+      "name": "humidity_first",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "humidity_last": {
+      "name": "humidity_last",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "pressure_avg": {
+      "name": "pressure_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "pressure_min": {
+      "name": "pressure_min",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "pressure_max": {
+      "name": "pressure_max",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "pressure_first": {
+      "name": "pressure_first",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "pressure_last": {
+      "name": "pressure_last",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "wind_speed_avg": {
+      "name": "wind_speed_avg",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "wind_speed_min": {
+      "name": "wind_speed_min",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "wind_speed_max": {
+      "name": "wind_speed_max",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "wind_speed_first": {
+      "name": "wind_speed_first",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "wind_speed_last": {
+      "name": "wind_speed_last",
+      "type": "decimal",
+      "length": 15,
+      "precision": 2
+    },
+    "wind_direction": {
+      "name": "wind_direction",
+      "type": "string"
+    },
+    "place" : {
+      "name": "place",
+      "type": "string"
+    }
+  }
+}

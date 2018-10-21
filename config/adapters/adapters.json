@@ -1,3 +1,4 @@
 {
-  "mysql_local": "#include mysql_local.json"
+  "mysql_local": "#include mysql_local.json",
+  "mongodb_local": "#include mongodb_local.json"
 }

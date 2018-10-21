@@ -6,125 +6,53 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.HashMap;
 
+/**
+ * Parser for CurrencyRatesLogger
+ */
 public class CurrencyRatesParser extends JsonParser {
 
+    /**
+     * Method, which descendants use to init configuration of fields, which parser should extract
+     * from input string
+     */
     public void initFields() {
-        ParseBiFunction biFunc = this::parseCurrencyRate;
+        ParseJsonFunction parseCurrencyRate = this::parseCurrencyRate;
         fieldDefs = DataMap.create(
-                "timestamp",DataMap.create(
-                    "name","timestamp",
-                    "type","integer",
-                    "parseFunction", (ParseFunction)this::parseCurrencyTimestamp
-                ),
-                "AUD", DataMap.create(
-                    "name", "AUD", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "BGN", DataMap.create(
-                        "name", "BGN", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "BRL", DataMap.create(
-                        "name", "BRL", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "CAD", DataMap.create(
-                        "name", "CAD", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "CHF", DataMap.create(
-                        "name", "CHF", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "CNY", DataMap.create(
-                        "name", "CNY", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "CZK", DataMap.create(
-                        "name", "CZK", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "DKK", DataMap.create(
-                        "name", "DKK", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "EUR", DataMap.create(
-                        "name", "EUR", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "GBP", DataMap.create(
-                        "name", "GBP", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "HKD", DataMap.create(
-                        "name", "HKD", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "HRK", DataMap.create(
-                        "name", "HRK", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "HUF", DataMap.create(
-                        "name", "HUF", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "IDR", DataMap.create(
-                        "name", "IDR", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "ILS", DataMap.create(
-                        "name", "ILS", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "INR", DataMap.create(
-                        "name", "INR", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "ISK", DataMap.create(
-                        "name", "ISK", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "JPY", DataMap.create(
-                        "name", "JPY", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "KRW", DataMap.create(
-                        "name", "KRW", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "MXN", DataMap.create(
-                        "name", "MXN", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "MYR", DataMap.create(
-                        "name", "MYR", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "NOK", DataMap.create(
-                        "name", "NOK", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "NZD", DataMap.create(
-                        "name", "NZD", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "PHP", DataMap.create(
-                        "name", "PHP", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "PLN", DataMap.create(
-                        "name", "PLN", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "RON", DataMap.create(
-                        "name", "RON", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "RUB", DataMap.create(
-                        "name", "RUB", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "SEK", DataMap.create(
-                        "name", "SEK", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "SGD", DataMap.create(
-                        "name", "SGD", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "THB", DataMap.create(
-                        "name", "THB", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "TRY", DataMap.create(
-                        "name", "TRY", "inArray", true, "type","decimal", "parseFunction", biFunc
-                ),
-                "ZAR", DataMap.create(
-                        "name", "ZAR", "inArray", true, "type","decimal", "parseFunction", biFunc
-                )
-
-                );
+            "timestamp",DataMap.create("name","timestamp", "type","integer",
+                    "parseFunction", (ParseJsonFunction)this::parseCurrencyTimestamp
+            )
+        );
+        Arrays.asList("AUD","BGN","BRL","CAD","CHF","CNY","CZK","DKK","EUR","GBP","HKD","HRK",
+                "HUF","IDR","ILS","INR", "ISK","JPY","KRW","MXN","MYR","NOK","NZD","PHP","PLN",
+                "RON","RUB","SEK","SGD","THB","TRY","ZAR")
+                .forEach(key -> fieldDefs.put(key,DataMap.create(
+                        "name",key,"inArray",true,"type","decimal","parseFunction",parseCurrencyRate
+                    )
+                ));
     }
 
-    private String parseCurrencyTimestamp(HashMap<String,Object> inputJson) {
+    /**
+     * Method used to parse timestamp field from JSON string
+     * @param fieldName Name of field which contains timestamp (or "data" as default)
+     * @param inputJson Transformed to JSON input string
+     * @return Timestamp converted to string
+     */
+    private String parseCurrencyTimestamp(String fieldName,HashMap<String,Object> inputJson) {
         if (!inputJson.containsKey("date")) return null;
         LocalDate date = LocalDate.parse(inputJson.get("date").toString());
         LocalDateTime datetime = LocalDateTime.of(date,LocalTime.of(0,0,0));
         return String.valueOf(datetime.toEpochSecond(ZoneOffset.UTC));
     }
 
+    /**
+     * Method used to parse and return rate of specified rate from provided JSON object
+     * @param currencyName Name of field (currency) to use
+     * @param inputJson Transformed to JSON string
+     * @return Decimal currency rate converted to string
+     */
     private String parseCurrencyRate(String currencyName,HashMap<String,Object> inputJson) {
         if (!inputJson.containsKey("rates") || !(inputJson.get("rates") instanceof LinkedTreeMap)) return null;
         LinkedTreeMap<String,Object> rates = (LinkedTreeMap<String,Object>)inputJson.get("rates");

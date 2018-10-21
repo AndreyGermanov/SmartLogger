@@ -119,8 +119,15 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
      */
     public void log() {
         HashMap<String,Object> record = readRecord();
+        if (record!=null)
+            syslog.log(ISyslog.LogLevel.DEBUG,"Logger '"+this.name+"' received record '"+record.toString()+"'.",
+                    this.getClass().getName(),"log");
         if (!shouldWriteDuplicates) record = getChangedRecord(record);
         if (record == null) return;
+        syslog.log(ISyslog.LogLevel.DEBUG,"Logger '"+this.name+"' filtered record '"+record.toString()+"'.",
+                this.getClass().getName(),"log");
+        syslog.log(ISyslog.LogLevel.DEBUG,"Logger '"+this.name+"' wrote record '"+record.toString()+"'.",
+                this.getClass().getName(),"log");
         writeRecord(record);
     }
 
@@ -181,7 +188,10 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
     private HashMap<String,Object> getChangedRecord(HashMap<String,Object> record) {
         if (record == null) return null;
         if (lastRecord == null) readAndSetLastRecord();
-        if (lastRecord == null) return record;
+        if (lastRecord == null) {
+            lastRecord = (HashMap<String,Object>)record.clone();
+            return record;
+        }
         HashMap<String,Object> resultRecord = new HashMap<>();
         for (String key: record.keySet()) {
             if (key == "timestamp") continue;
@@ -190,6 +200,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         }
         if (resultRecord.size()==0) return null;
         resultRecord.put("timestamp",record.get("timestamp"));
+        lastRecord = (HashMap<String,Object>)record.clone();
         return resultRecord;
     }
 
@@ -226,7 +237,6 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
             recordFile.write(json);
             recordFile.flush();
             recordFile.close();
-            lastRecord = (HashMap<String,Object>)record.clone();
             writeLastRecord();
         } catch (IOException e) {
             e.printStackTrace();

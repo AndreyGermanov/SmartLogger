@@ -4,19 +4,129 @@
     "average_function": "average",
     "expression": "temperature"
   },
-  "temperature_sum": {
-    "name": "temperature_sum",
-    "aggregate_function": "sum",
+  "temperature_first": {
+    "name": "temperature_first",
+    "aggregate_function": "first",
     "expression": "temperature"
   },
-  "temperature_count": {
-    "name": "temperature_count",
-    "aggregate_function": "count",
+  "temperature_last": {
+    "name": "temperature_last",
+    "aggregate_function": "last",
     "expression": "temperature"
   },
-  "temperature_avg_f": {
-    "name": "temperature_avg_f",
-    "aggregate_function": "average",
-    "expression": "temperature*1.8+32"
+  "temperature_min": {
+    "name": "temperature_min",
+    "aggregate_function": "min",
+    "expression": "temperature"
+  },
+  "temperature_max": {
+    "name": "temperature_max",
+    "aggregate_function": "max",
+    "expression": "temperature"
+  },
+  "water_temperature_avg": {
+    "name": "water_temperature_avg",
+    "average_function": "average",
+    "expression": "water_temperature"
+  },
+  "water_temperature_first": {
+    "name": "water_temperature_first",
+    "aggregate_function": "first",
+    "expression": "water_temperature"
+  },
+  "water_temperature_last": {
+    "name": "water_temperature_last",
+    "aggregate_function": "last",
+    "expression": "water_temperature"
+  },
+  "water_temperature_min": {
+    "name": "water_temperature_min",
+    "aggregate_function": "min",
+    "expression": "water_temperature"
+  },
+  "water_temperature_max": {
+    "name": "water_temperature_max",
+    "aggregate_function": "max",
+    "expression": "water_temperature"
+  },
+  "humidity_avg": {
+    "name": "humidity_avg",
+    "average_function": "average",
+    "expression": "humidity"
+  },
+  "humidity_first": {
+    "name": "humidity_first",
+    "aggregate_function": "first",
+    "expression": "humidity"
+  },
+  "humidity_last": {
+    "name": "humidity_last",
+    "aggregate_function": "last",
+    "expression": "humidity"
+  },
+  "humidity_min": {
+    "name": "humidity_min",
+    "aggregate_function": "min",
+    "expression": "humidity"
+  },
+  "humidity_max": {
+    "name": "humidity_max",
+    "aggregate_function": "max",
+    "expression": "humidity"
+  },
+  "pressure_avg": {
+    "name": "pressure_avg",
+    "average_function": "average",
+    "expression": "pressure"
+  },
+  "pressure_first": {
+    "name": "pressure_first",
+    "aggregate_function": "first",
+    "expression": "pressure"
+  },
+  "pressure_last": {
+    "name": "pressure_last",
+    "aggregate_function": "last",
+    "expression": "pressure"
+  },
+  "pressure_min": {
+    "name": "pressure_min",
+    "aggregate_function": "min",
+    "expression": "pressure"
+  },
+  "pressure_max": {
+    "name": "pressure_max",
+    "aggregate_function": "max",
+    "expression": "pressure"
+  },
+  "wind_speed_avg": {
+    "name": "wind_speed_avg",
+    "average_function": "average",
+    "expression": "wind_speed"
+  },
+  "wind_speed_first": {
+    "name": "wind_speed_first",
+    "aggregate_function": "first",
+    "expression": "wind_speed"
+  },
+  "wind_speed_last": {
+    "name": "wind_speed_last",
+    "aggregate_function": "last",
+    "expression": "wind_speed"
+  },
+  "wind_speed_min": {
+    "name": "wind_speed_min",
+    "aggregate_function": "min",
+    "expression": "wind_speed"
+  },
+  "wind_speed_max": {
+    "name": "wind_speed_max",
+    "aggregate_function": "max",
+    "expression": "wind_speed"
+  },
+  "wind_direction": {
+    "name": "wind_direction",
+    "average_function": "first",
+    "field": "wind_direction"
   }
 }

@@ -1,8 +1,18 @@
 package loggers.parsers;
 
+import main.ISyslog;
+
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+
+/**
+ * Functional interface for lambda functions, used to parse fields in HTML text
+ */
+interface ParseHtmlFunction {
+    Object apply(String fieldName,String inputString);
+}
 
 /**
  * Parser class used to extract data from HTML string.
@@ -27,19 +37,6 @@ public abstract class HTMLParser extends Parser {
     public abstract void initFields();
 
     /**
-     * Helper method which adds configuration of single field to array of field definitions
-     * @param name: Name of field
-     * @param type: Type of field (Java class)
-     * @param regex: Regular expression, which parser uses to extract field from input string
-     */
-    void initField(String name,Class type,String regex) {
-        HashMap<String,Object> field = new HashMap<>();
-        field.put("type",type);
-        field.put("regex",regex);
-        fieldDefs.put(name,(HashMap<String,Object>)field.clone());
-    }
-
-    /**
      * Main method used to parse record.
      * @return HashMap of results or empty HashMap
      */
@@ -55,7 +52,9 @@ public abstract class HTMLParser extends Parser {
     HashMap<String,Object> parseFields() {
         HashMap<String,Object> result = new HashMap<>();
         for (String key: fieldDefs.keySet()) {
-            Object value = parseField(key,inputString);
+            HashMap<String,Object> field = fieldDefs.get(key);
+            if (!field.containsKey("parseFunction") || !(field.get("parseFunction") instanceof ParseHtmlFunction)) continue;
+            Object value = ((ParseHtmlFunction)field.get("parseFunction")).apply(key,inputString);
             if (value != null) result.put(key,value);
         }
         return result;
@@ -67,9 +66,9 @@ public abstract class HTMLParser extends Parser {
      * @param inputString: Source string, to search field in
      * @return Object with field value. Type of object depends on field type
      */
-    Object parseField(Object fieldName,String inputString) {
+    Object parseField(String fieldName,String inputString) {
         HashMap<String,Object> fieldMetadata = fieldDefs.get(fieldName);
-        String regex = fieldMetadata.get("regex").toString();
+        String regex = getFieldRegex(fieldName);
         Class type = (Class)fieldMetadata.get("type");
         try {
             if (type == Double.class) {
@@ -79,7 +78,8 @@ public abstract class HTMLParser extends Parser {
                 return parseStringValue(regex, inputString);
             }
         }  catch (NumberFormatException e) {
-            this.syslog.logException(e,this,"parseField");
+            this.syslog.log(ISyslog.LogLevel.ERROR,"Field: '"+fieldName+"'. Error: "+e.getMessage()+".",
+                    this.getClass().getName(),"parseField");
         }
         return null;
     }
@@ -92,7 +92,7 @@ public abstract class HTMLParser extends Parser {
      */
     Double parseDecimalValue(String regex,String text) {
         String value = parseValue(regex,text);
-        if (value.isEmpty()) throw new NumberFormatException("Incorrect value");
+        if (value.isEmpty()) throw new NumberFormatException("Incorrect value '"+value+"'. Regex used: '"+regex+"'");
         value = value.replace(",",".");
         return Double.valueOf(value);
     }
@@ -105,7 +105,7 @@ public abstract class HTMLParser extends Parser {
      */
     String parseStringValue(String regex, String text) {
         String value = parseValue(regex,text);
-        if (value.isEmpty()) throw new NumberFormatException("Incorrect value");
+        if (value.isEmpty()) throw new NumberFormatException("Incorrect value '"+value+"'. Regex used: '"+regex+"'");
         return parseValue(regex,text).trim();
     }
 
@@ -122,4 +122,21 @@ public abstract class HTMLParser extends Parser {
         if (!matcher.find() || matcher.groupCount()==0) return "";
         return matcher.group(1);
     }
+
+    /**
+     * Method used to get regular expression, used to search and extract value of specified field in input HTML
+     * @param fieldName Name of field
+     * @return String with regular expression or empty string if regular expression not found
+     */
+    String getFieldRegex(String fieldName) {
+        HashMap<String,String> fieldRegEx = getRegEx();
+        if (!fieldRegEx.containsKey(fieldName)) return "";
+        return fieldRegEx.get(fieldName);
+    }
+
+    /**
+     * Method defines regular expressions which used to find field values in input HTML
+     * @return HashMap with regular expressions keyed by field names
+     */
+    HashMap<String,String> getRegEx() { return new HashMap<String,String>();}
 }

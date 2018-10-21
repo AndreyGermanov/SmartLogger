@@ -4,15 +4,15 @@
     "enabled": "true",
     "className": "YandexWeatherLogger",
     "placeName": "golubitskaya",
-    "pollPeriod": 1,
-    "shouldWriteDuplicates": true
+    "pollPeriod": 60,
+    "shouldWriteDuplicates": false
   },
   "yandex_weather_temruk": {
     "name": "yandex_weather_temryuk",
     "enabled": "true",
     "className": "YandexWeatherLogger",
     "placeName": "temryuk",
-    "pollPeriod": 1,
-    "shouldWriteDuplicates": true
+    "pollPeriod": 60,
+    "shouldWriteDuplicates": false
   }
 }

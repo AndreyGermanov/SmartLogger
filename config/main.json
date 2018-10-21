@@ -1,88 +1,10 @@
 {
+  "loggers": "#include loggers/loggers.json",
+  "aggregators": "#include aggregators/aggregators.json",
+  "adapters": "#include adapters/adapters.json",
+  "persisters": "#include persisters/persisters.json",
   "appPath": "/home/andrey/weatherGeather/work",
-  "logPath": "logs",
-  "cachePath": "cache",
   "statusPath": "status",
-  "name": "home_logger",
-  "loggers" : {
-    "yandex_weather_golybitskaya": {
-      "name": "yandex_weather_golubitskaya",
-      "className": "YandexWeatherLogger",
-      "enabled": true,
-      "pollPeriod": 1,
-      "placeName": "golubitskaya",
-      "shouldWriteDuplicates": true
-    }
-  },
-  "aggregators": {
-    "yandex_wether_golubitskaya_10": {
-      "name": "yandex_weather_golubitskaya_10",
-      "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_golubitskaya",
-      "destinationPath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_10",
-      "enabled": true,
-      "pollPeriod": 15,
-      "aggregationPeriod":"10",
-      "fields": {
-        "temperature_avg": {
-          "name": "temperature_avg",
-          "average_function": "average",
-          "expression": "temperature"
-        },
-        "temperature_max": {
-          "name": "temperature_max",
-          "average_function": "max",
-          "expression": "temperature"
-        },
-        "temperature_min": {
-          "name": "temperature_min",
-          "average_function": "min",
-          "expression": "temperature"
-        },
-        "temperature_count": {
-          "name": "temperature_count",
-          "average_function": "count",
-          "expression": "temperature"
-        },
-        "temperature_fist": {
-          "name": "temperature_first",
-          "average_function": "first",
-          "expression": "temperature"
-        },
-        "temperature_last": {
-          "name": "temperature_last",
-          "average_function": "last",
-          "expression": "temperature"
-        },
-        "place": {
-          "name": "place",
-          "constant": "golubitskaya"
-        }
-      }
-    }
-  },
-  "archivers": {
-    "yandex_weather_golubitskaya_10_zip": {
-      "name": "yandex_weather_golubitskaya_10_zip",
-      "enabled": true,
-      "pollPeriod": 60,
-      "type":"data_zip",
-      "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_10",
-      "destinationPath": "/home/andrey/weatherGeather/work/cache/archivers/yandex_weather_golubitskaya_10"
-    },
-    "yandex_weather_golubitskay_10_ftp_send": {
-      "name":"yandex_weather_golubitskay_10_ftp_send",
-      "enabled": true,
-      "pollPeriod": 120,
-      "type": "send_ftp",
-      "sourcePath": "/home/andrey/weatherGeather/work/cache/archivers/yandex_weather_golubitskaya_10",
-      "host": "portal.it-port.ru",
-      "port": 21,
-      "username": "",
-      "password": "",
-      "rootPath": "yandex_weather_golubitskaya_10",
-      "connectionTimeout": 60,
-      "socketTimeout": 20,
-      "filterRegex": "\\.zip$"
-    }
-  }
+  "cachePath": "cache",
+  "logPath": "logs"
 }

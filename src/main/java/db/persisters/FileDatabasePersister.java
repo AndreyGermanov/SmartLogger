@@ -88,11 +88,17 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
      */
     @Override
     public Integer persist() {
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"' started to persist...",
+                this.getClass().getName(),"persist");
         lastRecord = new HashMap<>();
         ArrayList<HashMap<String,Object>> data = prepareData();
         if (data == null || data.size()==0) return null;
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"' got data record "+data.toString(),
+                this.getClass().getName(),"persist");
         Integer insertedRowsCount = databaseAdapter.insert(collectionName,data);
         if (insertedRowsCount==null || insertedRowsCount==0) return null;
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"' wrote data record "+data.toString(),
+                this.getClass().getName(),"persist");
         writeLastRecord();
         return insertedRowsCount;
     }
@@ -131,6 +137,7 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
             if (key.equals("timestamp")) continue;
             if (!record.get(key).toString().equals(lastRecord.get(key).toString())) return false;
         }
+        syslog.log(ISyslog.LogLevel.DEBUG,"NOT DUPLICATED",this.getClass().getName(),"isDuplicateRecord");
         return true;
     }
 

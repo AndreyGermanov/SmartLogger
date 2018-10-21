@@ -1,13 +1,112 @@
 {
-  "yandex_weather_golubitskaya_5": {
-    "name": "yandex_weather_golubitskaya_5",
-    "databaseAdapter": "mysql_local",
-    "collectionName": "weather",
-    "sourcePath": "/home/andrey/logger/aggregators/yandex_weather_golubitskaya_10/data",
+  "yandex_weather_golubitskaya_900": {
+    "name": "yandex_weather_golubitskaya_900",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_900",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_900",
     "writeDuplicates": false,
     "fillDataGaps": false,
     "rowsPerRun": 0,
     "enabled": true,
-    "pollPeriod": 10
+    "pollPeriod": 1000
+  },
+  "yandex_weather_golubitskaya_1800": {
+    "name": "yandex_weather_golubitskaya_1800",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_1800",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_1800",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_golubitskaya_3600": {
+    "name": "yandex_weather_golubitskaya_3600",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_3600",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_3600",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_golubitskaya_43200": {
+    "name": "yandex_weather_golubitskaya_43200",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_43200",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_43200",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_golubitskaya_86400": {
+    "name": "yandex_weather_golubitskaya_86400",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_86400",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_86400",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_temryuk_900": {
+    "name": "yandex_weather_temryuk_900",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_900",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_temryuk_900",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_temryuk_1800": {
+    "name": "yandex_weather_temryuk_1800",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_1800",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_temryuk_1800",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_temryuk_3600": {
+    "name": "yandex_weather_temryuk_3600",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_3600",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_temryuk_3600",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_temryuk_43200": {
+    "name": "yandex_weather_temryuk_43200",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_43200",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_temryuk_43200",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
+  },
+  "yandex_weather_temryuk_86400": {
+    "name": "yandex_weather_temryuk_86400",
+    "databaseAdapter": "mongodb_local",
+    "collectionName": "weather_86400",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_temryuk_86400",
+    "writeDuplicates": false,
+    "fillDataGaps": false,
+    "rowsPerRun": 0,
+    "enabled": true,
+    "pollPeriod": 1000
   }
 }

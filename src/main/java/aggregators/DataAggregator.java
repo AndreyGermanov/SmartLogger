@@ -2,6 +2,7 @@ package aggregators;
 
 import cronjobs.CronjobTask;
 import cronjobs.CronjobTaskStatus;
+import main.ISyslog;
 
 import java.time.Instant;
 
@@ -18,6 +19,8 @@ public abstract class DataAggregator extends CronjobTask implements IDataAggrega
         aggregate();
         setTaskStatus(CronjobTaskStatus.IDLE);
         setLastExecTime(Instant.now().getEpochSecond());
+        if (syslog!=null)
+            syslog.log(ISyslog.LogLevel.DEBUG,"Task finished",this.getClass().getName(),"run");
     }
 
     /**

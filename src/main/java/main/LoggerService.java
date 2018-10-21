@@ -64,7 +64,7 @@ public class LoggerService {
             Cronjob cronjob = createCronjob(collectionType,name);
             if (cronjob == null) return;
             cronjobs.put(cronjob.getTask().getName(),cronjob);
-            (new Timer()).schedule(cronjob,0, cronjob.getPollPeriod()*1000);
+            (new Timer()).scheduleAtFixedRate(cronjob,0, cronjob.getPollPeriod()*1000);
         });
     }
 

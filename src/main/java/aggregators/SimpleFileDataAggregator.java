@@ -96,7 +96,10 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      * and stores aggregated data to destination folder
      */
     public void aggregate() {
+        syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' started ...",this.getClass().getName(),"aggregate");
         FileDataReader.DataRange range = getAggregationRange();
+        syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' received aggragation range ..."+range.startDate+"-"+range.endDate,
+                this.getClass().getName(),"aggregate");
         Stream.iterate(range.startDate,(Long timestamp) -> timestamp+aggregationPeriod)
                 .limit(Math.round((range.endDate-range.startDate)/aggregationPeriod))
                 .parallel()
@@ -135,6 +138,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         NavigableMap<Long,HashMap<String,Object>> data = sourceDataReader.getData(startDate+1,
                 startDate+aggregationPeriod,false);
         HashMap<String,AggregateFieldStats> stats = getAggregateStats(data);
+        syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' started interval "+startDate+"-"+(startDate+aggregationPeriod),
+                this.getClass().getName(),"aggregate");
         if (stats.size() == 0) return;
         HashMap<String,Object> aggregate = new HashMap<>();
         for (String fieldName: stats.keySet()) {
@@ -143,6 +148,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         }
         if (aggregate.size() == 0) return;
         aggregate = markRecord(startDate,aggregate);
+        syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' created record "+aggregate.toString(),
+                this.getClass().getName(),"aggregate");
         Path path = Paths.get(getRecordPath(aggregate));
         try {
             if (!Files.exists(path.getParent())) Files.createDirectories(path.getParent());
@@ -151,6 +158,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             writer.write((new Gson()).toJson(aggregate));
             writer.flush();
             writer.close();
+            syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' wrote record to"+path.toString(),
+                    this.getClass().getName(),"aggregate");
         } catch (Exception e) {
             syslog.logException(e,this,"aggregateInterval");
         }
@@ -239,8 +248,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             }
             return calculator.evaluate();
         } catch (Exception e) {
-            syslog.log(Syslog.LogLevel.WARNING,"Could not process expression '"+expression+"' for record '"+
-            record+"'. Exception thrown: "+e.getMessage()+".",this.getClass().getName(),"evaluateExpression");
+            //syslog.log(Syslog.LogLevel.WARNING,"Could not process expression '"+expression+"' for record '"+
+            //record+"'. Exception thrown: "+e.getMessage()+".",this.getClass().getName(),"evaluateExpression");
             return null;
         }
     }

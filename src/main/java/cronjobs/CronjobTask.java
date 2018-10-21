@@ -74,6 +74,8 @@ public abstract class CronjobTask implements ICronjobTask {
     public void run() {
         setLastStartTime(Instant.now().getEpochSecond());
         setTaskStatus(CronjobTaskStatus.RUNNING);
+        if (syslog != null)
+            syslog.log(ISyslog.LogLevel.DEBUG,"Running task '"+this.getName()+"'.",this.getClass().getName(),"run");
     }
 
     /**

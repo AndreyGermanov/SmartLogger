@@ -1,10 +1,133 @@
 {
-  "yandex_weather_golubitskaya_10": {
-    "name": "yandex_weather_golubitskaya_10",
-    "sourcePath": "/home/andrey/logger/yandex_weather_golubitskaya/data",
-    "aggregationPeriod": 10,
-    "fields": "#include fields/yandex_weather.json",
+  "yandex_weather_golubitskaya_900": {
+    "name": "yandex_weather_golubitskaya_900",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_golubitskaya",
+    "aggregationPeriod": 900,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+         "constant": "golubitskaya"
+      }
+    },
     "enabled": true,
-    "pollPeriod": 10
+    "pollPeriod": 900
+  },
+  "yandex_weather_golubitskaya_1800": {
+    "name": "yandex_weather_golubitskaya_1800",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_golubitskaya",
+    "aggregationPeriod": 1800,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "golubitskaya"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_golubitskaya_3600": {
+    "name": "yandex_weather_golubitskaya_3600",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_golubitskaya",
+    "aggregationPeriod": 3600,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "golubitskaya"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_golubitskaya_43200": {
+    "name": "yandex_weather_golubitskaya_43200",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_golubitskaya",
+    "aggregationPeriod": 43200,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "golubitskaya"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_golubitskaya_86400": {
+    "name": "yandex_weather_golubitskaya_86400",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_golubitskaya",
+    "aggregationPeriod": 86400,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "golubitskaya"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_temryuk_900": {
+    "name": "yandex_weather_temryuk_900",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_temryuk",
+    "aggregationPeriod": 900,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "temryuk"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_temryuk_1800": {
+    "name": "yandex_weather_temryuk_1800",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_temryuk",
+    "aggregationPeriod": 1800,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "temryuk"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_temryuk_3600": {
+    "name": "yandex_weather_temryuk_3600",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggersyandex_weather_temryuk",
+    "aggregationPeriod": 3600,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "temryuk"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_temryuk_43200": {
+    "name": "yandex_weather_temryuk_43200",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_temryuk",
+    "aggregationPeriod": 43200,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "temryuk"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
+  },
+  "yandex_weather_temryuk_86400": {
+    "name": "yandex_weather_temryuk_86400",
+    "sourcePath": "/home/andrey/weatherGeather/work/cache/loggers/yandex_weather_temryuk",
+    "aggregationPeriod": 86400,
+    "fields": {
+      "#include":"fields/yandex_weather.json",
+      "place": {
+        "constant": "temryuk"
+      }
+    },
+    "enabled": true,
+    "pollPeriod": 900
   }
 }
+
