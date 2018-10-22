@@ -1,6 +1,11 @@
 package webservers;
 
+import com.google.gson.internal.LinkedTreeMap;
 import io.javalin.Javalin;
+import main.ISyslog;
+import main.LoggerApplication;
+import main.Syslog;
+import main.WebService;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,8 +25,10 @@ public class WebServer implements IWebServer {
     private String staticPath = "";
     // Link to Jetty webserver instance
     private Javalin app;
-    // List of routes which this webserver should serve
-    private ArrayList<String> routes = new ArrayList<>();
+    // Link to system logger to log error or warning messages of this server or controllers
+    private ISyslog syslog;
+    // Configuration of routes, which webserver can serve
+    private HashMap<String,Object> routes = new HashMap<>();
 
     /**
      * Class constructors
@@ -41,6 +48,32 @@ public class WebServer implements IWebServer {
         name = config.getOrDefault("name",name).toString();
         port = Double.valueOf(config.getOrDefault("port",port).toString()).intValue();
         staticPath = config.getOrDefault("staticPath",staticPath).toString();
+        if (syslog == null) syslog = new Syslog(this);
+        if (config.containsKey("routes") && config.get("routes") instanceof HashMap) {
+            routes = (HashMap<String,Object>)config.get("routes");
+        }
+    }
+
+    /**
+     * Method used to bind route handlers for all routes, which configured for this webserver
+     * in configuration file
+     * @param routes Configuration object for routes
+     */
+    void initRoutes(HashMap<String,Object> routes) {
+        WebService webService = WebService.getInstance();
+        routes.entrySet().stream().forEach(routeEntry -> {
+            if(!(routeEntry.getValue() instanceof HashMap)) return;
+            HashMap<String,Object> route = (HashMap<String,Object>)routeEntry.getValue();
+            String url = route.getOrDefault("url","").toString();
+            if (url.isEmpty()) return;
+            String requestMethod = route.getOrDefault("method","GET").toString();
+            switch (requestMethod) {
+                case "GET": app.get(url,ctx -> webService.handleRequest(route,this,ctx));break;
+                case "POST": app.post(url,ctx-> webService.handleRequest(route,this,ctx));break;
+                case "PUT": app.put(url,ctx->webService.handleRequest(route,this,ctx));break;
+                case "DELETE": app.delete(url,ctx->webService.handleRequest(route,this,ctx));
+            }
+        });
     }
 
     /**
@@ -51,9 +84,14 @@ public class WebServer implements IWebServer {
         if (!staticPath.isEmpty() && Files.exists(Paths.get(staticPath).toAbsolutePath())) {
             app.enableStaticFiles(staticPath);
         }
-        app.get("/", ctx -> {
-            ctx.result("Server '"+name+"' is listening on port "+port);
+        app.before(ctx -> {
+            ctx.header("Access-Control-Allow-Origin","*");
+            ctx.header("Access-Control-Allow-Methods","GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS");
+            ctx.header("Access-Control-Allow-Headers","Authorization,Content-Type");
+            ctx.result("");
         });
+        app.get("/", ctx -> ctx.result("Server '"+name+"' is listening on port "+port));
+        if (routes.size()>0) initRoutes(routes);
     }
 
     /**
@@ -62,4 +100,11 @@ public class WebServer implements IWebServer {
     public void run() {
         app.start(port);
     }
+
+    public String getName() { return name; }
+
+    public String getSyslogPath() { return LoggerApplication.getInstance().getLogPath()+"/webservers/"+this.getName();}
+
+    public ISyslog getSyslog() { return syslog;}
+
 }

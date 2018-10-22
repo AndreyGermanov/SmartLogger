@@ -1,6 +1,11 @@
 package main;
 
+import com.google.gson.internal.LinkedTreeMap;
 import config.ConfigManager;
+import controllers.CronjobsController;
+import controllers.IController;
+import controllers.StatusController;
+import io.javalin.Context;
 import webservers.IWebServer;
 import webservers.WebServer;
 
@@ -20,6 +25,8 @@ public class WebService {
     private boolean started = false;
     /// Array of started service cronjobs indexed by names
     private HashMap<String, IWebServer> webservers = new HashMap<>();
+    private HashMap<String, IController> controllers = new HashMap<>();
+
     /// Link to configuration manager, which provides configuration objects for cronjobs
     private ConfigManager configManager = ConfigManager.getInstance();
 
@@ -39,6 +46,7 @@ public class WebService {
      */
     public void start() {
         if (started) return;
+        registerControllers();
         startWebServers();
         started = true;
     }
@@ -66,5 +74,33 @@ public class WebService {
         webserver.setup();
         webservers.put(config.get("name").toString(),webserver);
         (new Thread(webserver)).start();
+    }
+
+    /**
+     * Method used to create instances and register all controllers,
+     * which can be used to handle requests to webservers
+     */
+    private void registerControllers() {
+        controllers.put(CronjobsController.class.getName(),new CronjobsController());
+        controllers.put(StatusController.class.getName(), new StatusController());
+    }
+
+    /**
+     * Method which webserver calls when receive request to find controller which is responsible to
+     * handle this request and execute action on this controller to handle this request
+     * @param routeConfig: Config of route, on which webserver responded (from config file)
+     * @param webServer: Link to webserver instance, which received request
+     * @param ctx: Link to request context, contains all request data and link to response object
+     */
+    public void handleRequest(HashMap<String,Object> routeConfig, IWebServer webServer, Context ctx) {
+        String url = routeConfig.get("url").toString();
+        if (url.isEmpty()) return;
+        if (routeConfig.containsKey("controller")) {
+            controllers.get("controller").handleRequest(url,webServer,ctx);
+            return;
+        }
+        controllers.entrySet().stream().forEach(controller -> {
+            controller.getValue().handleRequest(url,webServer,ctx);
+        });
     }
 }
