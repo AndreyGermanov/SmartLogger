@@ -1,9 +1,9 @@
 package main;
 
 import config.ConfigManager;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
@@ -23,8 +23,6 @@ public class LoggerApplication {
      * Class constuctor
      */
     private LoggerApplication() { }
-
-
 
     /**
      * Returns path, which various modules can use to cache their data
@@ -59,7 +57,6 @@ public class LoggerApplication {
     /// Link to single instance of application
     private static LoggerApplication application;
 
-
     /**
      * Method used to get instance of application from other classes.
      * @return Instance of application
@@ -69,12 +66,15 @@ public class LoggerApplication {
         return application;
     }
 
-    public void run(String[] args) {
+    public void run(String[] args) throws IOException {
         ConfigManager configManager = ConfigManager.getInstance();
         if (args.length>=1) configManager.setConfigPath(args[0]);
         configManager.loadConfig();
         this.configure(configManager.getConfig());
         LoggerService.getInstance().start();
+        WebService.getInstance().start();
+        System.setErr(new PrintStream(new FileOutputStream(Paths.get("error.log").toFile())));
+        System.setOut(new PrintStream(new FileOutputStream(Paths.get("output.log").toFile())));
         System.out.println("Application started ...");
     }
 
@@ -82,7 +82,7 @@ public class LoggerApplication {
      * Entry poin of application
      * @param args Command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         LoggerApplication.getInstance().run(args);
     }
 }

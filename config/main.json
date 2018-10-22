@@ -6,5 +6,6 @@
   "appPath": "/home/andrey/weatherGeather/work",
   "statusPath": "status",
   "cachePath": "cache",
-  "logPath": "logs"
+  "logPath": "logs",
+  "webservers": "#include webservers/webservers.json"
 }

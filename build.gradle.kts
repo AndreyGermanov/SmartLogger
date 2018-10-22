@@ -17,6 +17,8 @@ dependencies {
     compile("com.orientechnologies","orientdb-jdbc","3.0.8")
     compile("org.mongodb","mongodb-driver-sync","3.8.2")
     compile("commons-net","commons-net","3.6")
+    compile("io.javalin","javalin", "2.3.0")
+    compile("org.slf4j","slf4j-simple", "1.7.25")
 }
 
 configure<JavaPluginConvention> {

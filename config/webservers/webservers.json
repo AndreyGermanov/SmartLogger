@@ -1,0 +1,26 @@
+{
+  "cronjobs": {
+    "enabled": true,
+    "name": "statusReceiver",
+    "port": 8910,
+    "routes": {
+      "post_status": {
+        "name": "post_status",
+        "url": "/status",
+        "method": "POST"
+      }
+    }
+  },
+  "dashboard": {
+    "enabled": true,
+    "name": "dashboard",
+    "port": 8080,
+    "routes": {
+      "get_cronjobs": {
+        "name": "get_cronjobs",
+        "url": "/cronjobs",
+        "method": "GET"
+      }
+    }
+  }
+}
