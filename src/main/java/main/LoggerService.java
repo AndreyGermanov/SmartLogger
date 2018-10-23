@@ -10,6 +10,7 @@ import db.persisters.FileDatabasePersister;
 import loggers.Logger;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Timer;
 
 /**
@@ -63,7 +64,8 @@ public class LoggerService {
         collection.forEach((name,value) -> {
             Cronjob cronjob = createCronjob(collectionType,name);
             if (cronjob == null) return;
-            cronjobs.put(cronjob.getTask().getName(),cronjob);
+            ICronjobTask task = cronjob.getTask();
+            cronjobs.put(task.getCollectionType()+"_"+task.getName(),cronjob);
             (new Timer()).scheduleAtFixedRate(cronjob,0, cronjob.getPollPeriod()*1000);
         });
     }
@@ -111,7 +113,12 @@ public class LoggerService {
      * Returns list of cronjobs, created from config file
      * @return List of cronjob
      */
-    public HashMap<String,Cronjob> getCronjobs() {
-        return cronjobs;
+    public Set<String> getCronjobNames() {
+        return cronjobs.keySet();
+    }
+
+    public ICronjobTask getCronjobTask(String name) {
+        if (!cronjobs.containsKey(name)) return null;
+        return cronjobs.get(name).getTask();
     }
 }

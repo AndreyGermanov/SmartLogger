@@ -55,6 +55,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     // will be automatically calculated based on application cache path
     private String destinationPath = "";
 
+    HashMap<String,Object> lastRecord;
+
     /**
      * Class constructors
      */
@@ -361,6 +363,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
                 date.getDayOfMonth() + "/" + date.getHour() + "/" + date.getMinute() + "/" + date.getSecond() + ".json";
         return path;
     }
+
+    public HashMap<String,Object> getLastRecord() { return lastRecord;}
 
     /**
      * Class, which holds summarized information of single field in aggregated interval

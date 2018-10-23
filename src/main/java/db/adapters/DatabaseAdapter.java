@@ -174,6 +174,6 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
         this.syslog = syslog;
     }
 
-    protected String getCollectionType() { return "adapters"; }
+    public String getCollectionType() { return "adapters"; }
 
 }

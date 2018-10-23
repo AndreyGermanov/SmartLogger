@@ -151,7 +151,7 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
      * Returns serialized information about last record as a string, ready to write to file in "statusPath"
      * @return String representation of last record or null if not able to produce this string
      */
-    protected String getLastRecordString() {
+    public String getLastRecordString() {
         if (lastRecord == null) return null;
         Gson gson = new Gson();
         return gson.toJson(lastRecord);
@@ -168,6 +168,10 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
         }
         Gson gson = new Gson();
         setLastRecord(gson.fromJson(result,HashMap.class));
+    }
+
+    public HashMap<String,Object> getLastRecord() {
+        return lastRecord;
     }
 
     @Override

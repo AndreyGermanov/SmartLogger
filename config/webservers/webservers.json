@@ -20,6 +20,10 @@
         "name": "get_cronjobs",
         "url": "/cronjobs",
         "method": "GET"
+      },
+      "get_last_record": {
+        "name": "get_last_record",
+        "url": "/cronjobs/last_record/:cronjob_id"
       }
     }
   }

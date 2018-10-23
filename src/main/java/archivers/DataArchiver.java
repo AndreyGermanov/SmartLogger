@@ -290,7 +290,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * Returns serialized information about last record as a string, ready to write to file in "statusPath"
      * @return String representation of last record or null if not able to produce this string
      */
-    protected String getLastRecordString() {
+    public String getLastRecordString() {
         if (lastFileName.isEmpty() || lastFileTimestamp == 0L) return null;
         return lastFileTimestamp.toString()+" "+lastFileName;
     }
@@ -318,7 +318,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
      * @return Collection name as string
      */
-    protected String getCollectionType() { return "archivers";}
+    public String getCollectionType() { return "archivers";}
 
     /**
      * Getters and setters for properties
@@ -366,5 +366,9 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
 
     public long getArchivedFilesSize() {
         return archivedFilesSize;
+    }
+
+    public String getLastRecord() {
+        return this.getLastRecordString();
     }
 }

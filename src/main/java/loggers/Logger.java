@@ -218,7 +218,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
      * Returns serialized information about last record as a string, ready to write to file in "statusPath"
      * @return String representation of last record or null if not able to produce this string
      */
-    protected String getLastRecordString() {
+    public String getLastRecordString() {
         return getJson(lastRecord);
     }
 
@@ -294,7 +294,7 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
      * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
      * @return Collection name as string
      */
-    protected String getCollectionType() { return "loggers"; }
+    public String getCollectionType() { return "loggers"; }
 
     /**
      * Used to get link to current syslog object, used to log messages about this logger
@@ -310,7 +310,8 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         this.syslog = syslog;
     }
 
-    protected HashMap<String,Object> getLastRecord() { return lastRecord;}
+    @Override
+    public HashMap<String,Object> getLastRecord() { return lastRecord;}
 
     /**
      * Method used to set Syslog instance to Downloader and Parser instances of this logger

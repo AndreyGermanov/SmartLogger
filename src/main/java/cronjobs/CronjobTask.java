@@ -54,7 +54,7 @@ public abstract class CronjobTask implements ICronjobTask {
      * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
      * @return Collection name as string
      */
-    protected String getCollectionType() {
+    public String getCollectionType() {
         return "";
     }
 
@@ -96,7 +96,7 @@ public abstract class CronjobTask implements ICronjobTask {
      * Returns serialized information about last record as a string, ready to write to file in "statusPath"
      * @return String representation of last record or null if not able to produce this string
      */
-    protected String getLastRecordString() { return null;}
+    public String getLastRecordString() { return null;}
 
     /**
      * Method used to read last written record from file
