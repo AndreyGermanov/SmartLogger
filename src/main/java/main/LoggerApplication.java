@@ -1,10 +1,12 @@
 package main;
 
 import config.ConfigManager;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 
 /**
@@ -66,16 +68,39 @@ public class LoggerApplication {
         return application;
     }
 
-    public void run(String[] args) throws IOException {
+    public void run(String[] args) {
+        setupOutputs();
         ConfigManager configManager = ConfigManager.getInstance();
         if (args.length>=1) configManager.setConfigPath(args[0]);
         configManager.loadConfig();
         this.configure(configManager.getConfig());
         LoggerService.getInstance().start();
         WebService.getInstance().start();
-        System.setErr(new PrintStream(new FileOutputStream(Paths.get("error.log").toFile())));
-        System.setOut(new PrintStream(new FileOutputStream(Paths.get("output.log").toFile())));
         System.out.println("Application started ...");
+    }
+
+    private void setupOutputs() {
+        try {
+            if (Files.exists(Paths.get("error.log"))) rotateLogFile(Paths.get("error.log"));
+            if (Files.exists(Paths.get("output.log"))) rotateLogFile(Paths.get("output.log"));
+            System.setErr(new PrintStream(new FileOutputStream(Paths.get("error.log").toFile())));
+            System.setOut(new PrintStream(new FileOutputStream(Paths.get("output.log").toFile())));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void rotateLogFile(Path file) {
+        StandardOpenOption openOption = StandardOpenOption.CREATE;
+        Path backupFile = Paths.get(file.toString()+".1");
+        if (Files.exists(backupFile))
+            openOption = StandardOpenOption.APPEND;
+        try (BufferedWriter writer = Files.newBufferedWriter(backupFile,openOption);
+        BufferedReader reader = Files.newBufferedReader(file)) {
+            writer.write(reader.lines().reduce("",(s,s1) -> s+"\n"+s1));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

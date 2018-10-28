@@ -109,14 +109,22 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
      * @return
      */
     private ArrayList<HashMap<String,Object>> prepareData() {
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"'. Begin prepare data to persist",
+                this.getClass().getName(),"prepareData");
         if (sourceDataReader == null) return null;
         readAndSetLastRecord();
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"'. Read last data record.",
+                this.getClass().getName(),"prepareData");
         Long startDate = 0L;
         if (lastRecord != null) startDate = Long.parseLong(lastRecord.get("timestamp").toString());
         if (startDate > 0) startDate +=1;
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"'. Last record timestamp = ."+startDate,
+                this.getClass().getName(),"prepareData");
         NavigableMap<Long,HashMap<String,Object>> data = sourceDataReader.getData(startDate,true);
+        syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"'. Got data ."+data,
+                this.getClass().getName(),"prepareData");
         return (data == null || data.size()==0) ? null :
-        (ArrayList<HashMap<String,Object>>)data.entrySet().stream().map(Map.Entry::getValue)
+        (ArrayList<HashMap<String,Object>>)data.values().stream()
                 .sorted(Comparator.comparingInt(s -> Integer.parseInt(s.get("timestamp").toString())))
                 .filter(record -> !isDuplicateRecord(record))
                 .limit(rowsPerRun > 0 ? rowsPerRun : data.size())

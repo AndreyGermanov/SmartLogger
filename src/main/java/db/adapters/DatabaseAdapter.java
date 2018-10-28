@@ -55,6 +55,8 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
         this.syslog = new Syslog(this);
     }
 
+    //public abstract ArrayList<HashMap<String,Object>> select(String sql);
+
     /**
      * Method used to insert set of records to specified collection in database
      * @param collectionName Name of collection

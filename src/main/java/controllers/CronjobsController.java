@@ -5,6 +5,7 @@ import io.javalin.Context;
 import utils.DataMap;
 import webservers.IWebServer;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CronjobsController extends Controller {
@@ -58,11 +59,11 @@ public class CronjobsController extends Controller {
      * @param name ID of cronjob
      * @return HashMap with information about cronjob: name, is it enabled or not, active or not etc.
      */
-    private HashMap<String,Object> getCronjobInfo(String name) {
+    private Optional<HashMap<String,Object>> getCronjobInfo(String name) {
         ICronjobTask cronjob = loggerService.getCronjobTask(name);
-        if (cronjob == null) return null;
-        return DataMap.create("name",cronjob.getName(),"status", cronjob.getTaskStatus(),
+        if (cronjob == null) return Optional.empty();
+        return Optional.of(DataMap.create("name",cronjob.getName(),"status", cronjob.getTaskStatus(),
                 "type",cronjob.getCollectionType(),"enabled",
-                cronjob.isEnabled());
+                cronjob.isEnabled()));
     }
 }
