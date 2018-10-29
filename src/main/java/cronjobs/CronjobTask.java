@@ -24,7 +24,7 @@ public abstract class CronjobTask implements ICronjobTask {
     private CronjobTaskStatus taskStatus = CronjobTaskStatus.IDLE;
     // Last timestamp when this task started execution
     private Long lastStartTime = 0L;
-    // Last timestmap when this task finished execution
+    // Last timestamp when this task finished execution
     private Long lastExecutionTime = 0L;
     // Path, to which task can write status information about progress or result of execution
     protected String statusPath = "";
@@ -72,6 +72,7 @@ public abstract class CronjobTask implements ICronjobTask {
      * Method which used by Cronjob object to start this task
      */
     public void run() {
+        if (!this.isEnabled()) return;
         setLastStartTime(Instant.now().getEpochSecond());
         setTaskStatus(CronjobTaskStatus.RUNNING);
         if (syslog != null)

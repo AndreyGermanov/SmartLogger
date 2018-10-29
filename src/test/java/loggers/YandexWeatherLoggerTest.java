@@ -28,7 +28,7 @@ class YandexWeatherLoggerMoc extends YandexWeatherLogger {
 
     public HashMap<String,Object> fakeLastRecord;
 
-    protected HashMap<String,Object> getLastRecord() {
+    public HashMap<String,Object> getLastRecord() {
         if (fakeLastRecord != null)
             return fakeLastRecord;
         else

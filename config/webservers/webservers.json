@@ -24,6 +24,22 @@
       "get_last_record": {
         "name": "get_last_record",
         "url": "/cronjobs/last_record/:cronjob_id"
+      },
+      "enable_cronjob": {
+        "name": "enable_cronjob",
+        "url": "/cronjobs/enable/:cronjob_id/:enable"
+      }
+    }
+  },
+  "flickr": {
+    "enabled": true,
+    "name": "flickr",
+    "port": 8081,
+    "routes": {
+      "get_recent": {
+        "name": "get_recent",
+        "url": "/recent",
+        "method": "GET"
       }
     }
   }

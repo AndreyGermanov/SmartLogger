@@ -1,5 +1,7 @@
 package db.adapters;
 
+import main.ISyslog;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -43,18 +45,22 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
      */
     Integer executeUpdateQuery(Object updateStatement) {
         String updateString = updateStatement.toString();
+        Statement statement;
         try {
-            Statement statement = connection.createStatement();
+            statement = connection.createStatement();
             Arrays.stream(updateString.split(";")).forEach(sql -> {
                 try {
+                    syslog.log(ISyslog.LogLevel.DEBUG,"Adding SQL to batch: '"+sql+"'",this.getClass().getName(),"executeUpdateQuery");
                     statement.addBatch(sql);
                 } catch (Exception e) {
                     syslog.logException(e,this,"executeUpdateQuery");
-                };
+                }
             });
-            return Arrays.stream(statement.executeBatch()).reduce((i,i1) -> i+i1).getAsInt();
-        } catch (SQLException e) {
-            syslog.logException(e,this,"executeUpdateQuery");
+            syslog.log(ISyslog.LogLevel.DEBUG,"Executing SQL batch",this.getClass().getName(),"executeUpdateQuery");
+            return Arrays.stream(statement.executeBatch()).reduce((i,i1) -> i+i1).orElse(0);
+        } catch (Exception e) {
+            syslog.log(ISyslog.LogLevel.ERROR,"Could not execute batch query '"+updateString+"'",
+                    this.getClass().getName(),"executeUpdateQuery");
             return null;
         }
     }

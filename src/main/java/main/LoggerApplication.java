@@ -20,6 +20,7 @@ public class LoggerApplication {
     private String cachePath = "cache";
     private String logPath = "logs";
     private String statusPath = "statusPath";
+    ConfigManager configManager;
 
     /**
      * Class constuctor
@@ -69,22 +70,25 @@ public class LoggerApplication {
     }
 
     public void run(String[] args) {
-        setupOutputs();
-        ConfigManager configManager = ConfigManager.getInstance();
+        configManager = ConfigManager.getInstance();
         if (args.length>=1) configManager.setConfigPath(args[0]);
         configManager.loadConfig();
         this.configure(configManager.getConfig());
+        setupOutputs();
         LoggerService.getInstance().start();
         WebService.getInstance().start();
         System.out.println("Application started ...");
     }
 
     private void setupOutputs() {
+        Path errorLogPath = Paths.get(this.getLogPath()+"/main/error.log");
+        Path outputLogPath = Paths.get(this.getLogPath()+"/main/output.log");
         try {
-            if (Files.exists(Paths.get("error.log"))) rotateLogFile(Paths.get("error.log"));
-            if (Files.exists(Paths.get("output.log"))) rotateLogFile(Paths.get("output.log"));
-            System.setErr(new PrintStream(new FileOutputStream(Paths.get("error.log").toFile())));
-            System.setOut(new PrintStream(new FileOutputStream(Paths.get("output.log").toFile())));
+            if (Files.notExists(errorLogPath.getParent())) Files.createDirectories(errorLogPath.getParent());
+            if (Files.exists(errorLogPath)) rotateLogFile(errorLogPath);
+            if (Files.exists(outputLogPath)) rotateLogFile(outputLogPath);
+            System.setErr(new PrintStream(new FileOutputStream(errorLogPath.toFile())));
+            System.setOut(new PrintStream(new FileOutputStream(outputLogPath.toFile())));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 /**
  * Class which implements internal error and info logging
@@ -35,7 +36,9 @@ public class Syslog implements ISyslog {
      */
     @Override
     public void logException(Exception e, Object source, String methodName) {
-        this.log(Syslog.LogLevel.ERROR,e.getMessage(),source.getClass().getName(),methodName);
+        String message = "Message: "+e.getLocalizedMessage()+"\n Stack trace: \n";
+        message += Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).reduce("",(s, s1) -> s = s+"\n"+s1);
+        this.log(Syslog.LogLevel.ERROR,message,source.getClass().getName(),methodName);
     }
 
     /**
@@ -72,7 +75,7 @@ public class Syslog implements ISyslog {
      * @param level: Log level
      * @return
      */
-    Path getLogFilePath(LogLevel level) {
+    private Path getLogFilePath(LogLevel level) {
         String logPath = owner.getSyslogPath();
         if (logPath == null) return null;
         switch (level) {
