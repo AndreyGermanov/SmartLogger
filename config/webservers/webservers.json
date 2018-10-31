@@ -21,6 +21,11 @@
         "url": "/cronjobs",
         "method": "GET"
       },
+      "get_cronjob_types": {
+        "name": "get_cronjob_types",
+        "url": "/cronjobs/types",
+        "method": "GET"
+      },
       "get_last_record": {
         "name": "get_last_record",
         "url": "/cronjobs/last_record/:cronjob_id"

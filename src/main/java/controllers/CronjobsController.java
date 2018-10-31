@@ -20,6 +20,7 @@ public class CronjobsController extends Controller {
     protected void handleGetRequest(String route, IWebServer webServer, Context ctx) {
         switch (route) {
             case "/cronjobs": actionGetCronjobs(webServer,ctx);break;
+            case "/cronjobs/types": actionGetCronjobTypes(webServer,ctx);break;
             case "/cronjobs/last_record/:cronjob_id": actionGetLastRecord(webServer,ctx);break;
             case "/cronjobs/enable/:cronjob_id/:enable": actionEnableCronjob(webServer,ctx);break;
         }
@@ -78,6 +79,15 @@ public class CronjobsController extends Controller {
         }
         task.setEnabled(enable);
         sendSuccessResponse(ctx,null);
+    }
+
+    /**
+     * Action returns list of all possible cronjob types
+     * @param webServer Link to webserver
+     * @param ctx Request context
+     */
+    public void actionGetCronjobTypes(IWebServer webServer, Context ctx) {
+        sendSuccessResponse(ctx,LoggerService.getInstance().getCronjobTypes());
     }
 
     /**

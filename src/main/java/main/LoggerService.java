@@ -8,10 +8,8 @@ import cronjobs.Cronjob;
 import cronjobs.ICronjobTask;
 import db.persisters.FileDatabasePersister;
 import loggers.Logger;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Timer;
+
+import java.util.*;
 
 /**
  * Service which manages all modules, related to logging (loggers,aggregators, persisters).
@@ -110,12 +108,23 @@ public class LoggerService {
     }
 
     /**
-     * Returns list of cronjobs, created from config file
-     * @return List of cronjob
+     * Returns list of unique names of cronjobs, created from config file
+     * @return List of cronjob names
      */
     public Set<String> getCronjobNames() {
         return cronjobs.keySet();
     }
+
+    /**
+     * Returns list of cronjob types
+     * @return List of cronjob types
+     */
+    public Set<String> getCronjobTypes() {
+        Set<String> result = new TreeSet<>();
+        for (String key: cronjobs.keySet()) result.add(cronjobs.get(key).getTask().getCollectionType());
+        return result;
+    }
+
 
     public ICronjobTask getCronjobTask(String name) {
         if (!cronjobs.containsKey(name)) return null;
