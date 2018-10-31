@@ -8,8 +8,8 @@ import cronjobs.Cronjob;
 import cronjobs.ICronjobTask;
 import db.persisters.FileDatabasePersister;
 import loggers.Logger;
-
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service which manages all modules, related to logging (loggers,aggregators, persisters).
@@ -120,9 +120,7 @@ public class LoggerService {
      * @return List of cronjob types
      */
     public Set<String> getCronjobTypes() {
-        Set<String> result = new TreeSet<>();
-        for (String key: cronjobs.keySet()) result.add(cronjobs.get(key).getTask().getCollectionType());
-        return result;
+        return cronjobs.keySet().stream().map(key->cronjobs.get(key).getTask().getCollectionType()).collect(Collectors.toSet());
     }
 
 
