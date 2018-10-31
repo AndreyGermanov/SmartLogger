@@ -120,7 +120,7 @@ public class LoggerService {
      * @return List of cronjob types
      */
     public Set<String> getCronjobTypes() {
-        return cronjobs.keySet().stream().map(key->cronjobs.get(key).getTask().getCollectionType()).collect(Collectors.toSet());
+        return cronjobs.values().stream().map(it->it.getTask().getCollectionType()).collect(Collectors.toSet());
     }
 
 
