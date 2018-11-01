@@ -68,4 +68,9 @@ public class FileDataReaderTest implements Syslog.Loggable {
     public String getSyslogPath() {
         return null;
     }
+
+    @Override
+    public HashMap<String, Object> getSyslogConfig() {
+        return new HashMap<>();
+    }
 }

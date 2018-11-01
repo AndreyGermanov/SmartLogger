@@ -2,7 +2,6 @@ package cronjobs;
 
 import main.ISyslog;
 import main.LoggerApplication;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,6 +29,7 @@ public abstract class CronjobTask implements ICronjobTask {
     protected String statusPath = "";
     // Link to system logger used to write information about errors or warnings to file
     protected ISyslog syslog;
+    protected HashMap<String,Object> syslogConfig = new HashMap<>();
 
     /**
      * Getters and setters for variables defined above
@@ -66,6 +66,10 @@ public abstract class CronjobTask implements ICronjobTask {
         if (config==null) return;
         enabled = Boolean.parseBoolean(config.getOrDefault("enabled",false).toString());
         statusPath = config.getOrDefault("statusPath",statusPath).toString();
+        try {
+            syslogConfig = (HashMap<String, Object>) config.getOrDefault("syslog",
+                    LoggerApplication.getInstance().getSyslogConfig());
+        } catch (Exception e) {e.printStackTrace();}
     }
 
     /**
@@ -151,6 +155,10 @@ public abstract class CronjobTask implements ICronjobTask {
      */
     public void setSyslog(ISyslog syslog) {
         this.syslog = syslog;
+    }
+
+    public HashMap<String,Object> getSyslogConfig() {
+        return syslogConfig;
     }
 
 }

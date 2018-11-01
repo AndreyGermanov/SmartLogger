@@ -1,15 +1,12 @@
 package webservers;
 
-import com.google.gson.internal.LinkedTreeMap;
 import io.javalin.Javalin;
 import main.ISyslog;
 import main.LoggerApplication;
 import main.Syslog;
 import main.WebService;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -29,6 +26,8 @@ public class WebServer implements IWebServer {
     private ISyslog syslog;
     // Configuration of routes, which webserver can serve
     private HashMap<String,Object> routes = new HashMap<>();
+
+    private HashMap<String,Object> syslogConfig;
 
     /**
      * Class constructors
@@ -52,6 +51,10 @@ public class WebServer implements IWebServer {
         if (config.containsKey("routes") && config.get("routes") instanceof HashMap) {
             routes = (HashMap<String,Object>)config.get("routes");
         }
+        try {
+            syslogConfig = (HashMap<String,Object>)config.getOrDefault("syslog",
+                    LoggerApplication.getInstance().getSyslogConfig());
+        } catch (Exception e) {e.printStackTrace();}
     }
 
     /**
@@ -106,5 +109,10 @@ public class WebServer implements IWebServer {
     public String getSyslogPath() { return LoggerApplication.getInstance().getLogPath()+"/webservers/"+this.getName();}
 
     public ISyslog getSyslog() { return syslog;}
+
+    @Override
+    public HashMap<String,Object> getSyslogConfig() {
+        return syslogConfig;
+    }
 
 }

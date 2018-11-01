@@ -187,5 +187,10 @@ public class ConfigManager implements ISyslog.Loggable {
         return LoggerApplication.getInstance().getLogPath()+"/"+this.getName();
     }
 
+    @Override
+    public HashMap<String, Object> getSyslogConfig() {
+        return LoggerApplication.getInstance().getSyslogConfig();
+    }
+
     public HashMap<String,Object> getConfig() { return config;}
 }

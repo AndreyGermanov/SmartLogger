@@ -3,7 +3,7 @@
     "name": "yandex_weather_golubitskaya",
     "enabled": "true",
     "className": "YandexWeatherLogger",
-    "placeName": "golubitskaya",
+    "place": "golubitskaya",
     "pollPeriod": 60,
     "shouldWriteDuplicates": false
   },
@@ -11,7 +11,7 @@
     "name": "yandex_weather_temryuk",
     "enabled": "true",
     "className": "YandexWeatherLogger",
-    "placeName": "temryuk",
+    "place": "temryuk",
     "pollPeriod": 60,
     "shouldWriteDuplicates": false
   }

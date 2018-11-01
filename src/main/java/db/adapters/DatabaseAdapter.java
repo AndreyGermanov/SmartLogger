@@ -19,6 +19,8 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
     // Link to System logger to write error and warning messages
     protected ISyslog syslog;
 
+    protected HashMap<String,Object> syslogConfig;
+
     /**
      * Factory method which returns concrete data adapter by unique name, using configuration file
      * @param name Name of adapter, defined in configuration file
@@ -52,6 +54,10 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
     public void configure(HashMap<String,Object> config) {
         this.name = config.getOrDefault("name","").toString();
         this.collections = (HashMap<String,Object>)config.getOrDefault("collections",new HashMap<>());
+        try {
+            this.syslogConfig = (HashMap<String,Object>)config.getOrDefault("syslog",
+                    LoggerApplication.getInstance().getSyslogConfig());
+        } catch (Exception e) {e.printStackTrace();}
         this.syslog = new Syslog(this);
     }
 
@@ -177,5 +183,10 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
     }
 
     public String getCollectionType() { return "adapters"; }
+
+    @Override
+    public HashMap<String, Object> getSyslogConfig() {
+        return syslogConfig;
+    }
 
 }

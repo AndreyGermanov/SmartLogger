@@ -112,7 +112,9 @@ public class YandexWeatherLoggerTest {
 
     @Test
     public void log() {
+
         logger.log();
+
     }
 
     @Test

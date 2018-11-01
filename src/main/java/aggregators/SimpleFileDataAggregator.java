@@ -100,11 +100,10 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     public void aggregate() {
         syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' started ...",this.getClass().getName(),"aggregate");
         FileDataReader.DataRange range = getAggregationRange();
-        syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' received aggragation range ..."+range.startDate+"-"+range.endDate,
+        syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' received aggregation range ..."+range.startDate+"-"+range.endDate,
                 this.getClass().getName(),"aggregate");
         Stream.iterate(range.startDate,(Long timestamp) -> timestamp+aggregationPeriod)
                 .limit(Math.round((range.endDate-range.startDate)/aggregationPeriod))
-                .parallel()
                 .forEach(this::aggregateInterval);
     }
 
@@ -113,8 +112,9 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
      * @return Range with startDate and endDate
      */
     FileDataReader.DataRange getAggregationRange() {
-        FileDataReader.DataRange aggregatedDataRange = this.getAggregatorDataReader().getRange();
-        Long startDate = aggregatedDataRange.endDate;
+        if (lastRecord == null || !lastRecord.containsKey("timestamp")) readAndSetLastRecord();
+        syslog.log(ISyslog.LogLevel.DEBUG,"Last record "+lastRecord.toString(),this.getClass().getName(),"getAggregationRange");
+        Long startDate = Long.parseLong(lastRecord.getOrDefault("timestamp",0).toString());
         Long endDate = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
         if (this.aggregatesPerRun!=0) endDate = startDate + aggregatesPerRun*aggregationPeriod;
         FileDataReader.DataStats sourceDataRange = sourceDataReader.getDataStats(startDate,endDate,true);
@@ -160,6 +160,8 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
             writer.write((new Gson()).toJson(aggregate));
             writer.flush();
             writer.close();
+            lastRecord = (HashMap<String,Object>)aggregate.clone();
+            writeLastRecord();
             syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' wrote record to"+path.toString(),
                     this.getClass().getName(),"aggregate");
         } catch (Exception e) {
@@ -365,6 +367,26 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     }
 
     public HashMap<String,Object> getLastRecord() { return lastRecord;}
+
+    /**
+     * Returns serialized information about last record as a string, ready to write to file in "statusPath"
+     * @return String representation of last record or null if not able to produce this string
+     */
+    public String getLastRecordString() {
+        if (lastRecord == null) return null;
+        return (new Gson()).toJson(lastRecord);
+    }
+
+    /**
+     * Method used to get string value of last record from status file, parse it and setup
+     */
+    protected void readAndSetLastRecord() {
+        String record = readLastRecord();
+        lastRecord = new HashMap<>();
+        if (record == null || record.isEmpty()) return;
+        Gson gson = new Gson();
+        lastRecord = gson.fromJson(record,HashMap.class);
+    }
 
     /**
      * Class, which holds summarized information of single field in aggregated interval

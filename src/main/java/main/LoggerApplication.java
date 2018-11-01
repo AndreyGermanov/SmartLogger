@@ -20,7 +20,8 @@ public class LoggerApplication {
     private String cachePath = "cache";
     private String logPath = "logs";
     private String statusPath = "statusPath";
-    ConfigManager configManager;
+    private HashMap<String,Object> syslogConfig = new HashMap<>();
+    private ConfigManager configManager;
 
     /**
      * Class constuctor
@@ -55,6 +56,9 @@ public class LoggerApplication {
         cachePath = config.getOrDefault("cachePath",cachePath).toString();
         logPath = config.getOrDefault("logPath",logPath).toString();
         statusPath = config.getOrDefault("statusPath",statusPath).toString();
+        try {
+            syslogConfig = (HashMap<String,Object>)config.getOrDefault("syslog",syslogConfig);
+        } catch (Exception e) { e.printStackTrace();}
     }
 
     /// Link to single instance of application
@@ -106,6 +110,8 @@ public class LoggerApplication {
             e.printStackTrace();
         }
     }
+
+    public HashMap<String,Object> getSyslogConfig() { return syslogConfig;}
 
     /**
      * Entry poin of application

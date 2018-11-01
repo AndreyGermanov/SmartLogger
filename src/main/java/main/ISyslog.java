@@ -1,5 +1,7 @@
 package main;
 
+import java.util.HashMap;
+
 public interface ISyslog {
     void logException(Exception e, Object source, String methodName);
 
@@ -18,5 +20,6 @@ public interface ISyslog {
     public interface Loggable {
         String getName();
         String getSyslogPath();
+        HashMap<String,Object> getSyslogConfig();
     }
 }

@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Class which implements internal error and info logging
@@ -19,6 +20,9 @@ public class Syslog implements ISyslog {
      * Owning object
      */
     private Loggable owner;
+    private boolean rotateLogs = true;
+    private long maxLogFileSize = 10 * 1024L;
+    private int maxLogFiles = 5;
 
     /**
      * Class constuctor
@@ -26,6 +30,14 @@ public class Syslog implements ISyslog {
      */
     public Syslog(Loggable owner) {
         this.owner = owner;
+        this.configure(this.owner.getSyslogConfig());
+    }
+
+    public void configure(HashMap<String,Object> config) {
+        rotateLogs = Boolean.parseBoolean(config.getOrDefault("rotateLogs",rotateLogs).toString());
+        maxLogFileSize = Double.valueOf(config.getOrDefault("maxLogFileSize",maxLogFileSize).toString()).longValue();
+        maxLogFiles = Double.valueOf(config.getOrDefault("maxLogFiles",maxLogFiles).toString()).intValue();
+        this.log(LogLevel.INFO,config.toString(),"Syslog","configure");
     }
 
     /**
@@ -73,7 +85,7 @@ public class Syslog implements ISyslog {
     /**
      * Method used to get full path to log file, based on Log level and on owner object
      * @param level: Log level
-     * @return
+     * @return Full path to log file of specified level
      */
     private Path getLogFilePath(LogLevel level) {
         String logPath = owner.getSyslogPath();
