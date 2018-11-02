@@ -35,7 +35,7 @@ public class DataCleaner extends CronjobTask implements IDataCleaner, ISyslog.Lo
      * @param name Name of rotator in configuration cleaners
      */
     public DataCleaner(String name) {
-        this.configure(ConfigManager.getInstance().getConfigNode("rotators",name));
+        this.configure(ConfigManager.getInstance().getConfigNode("cleaners",name));
     }
 
     /**
@@ -124,4 +124,10 @@ public class DataCleaner extends CronjobTask implements IDataCleaner, ISyslog.Lo
     public long getLastRecordTimestamp() {
         return 0L;
     }
+
+    /**
+     * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
+     * @return Collection name as string
+     */
+    public String getCollectionType() { return "cleaners";}
 }

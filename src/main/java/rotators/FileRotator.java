@@ -180,4 +180,10 @@ public class FileRotator extends CronjobTask implements IFileRotator {
         return 0L;
     }
 
+    /**
+     * Returns a type of collection of tasks, to which current task belongs (loggers, aggregators, archivers etc)
+     * @return Collection name as string
+     */
+    public String getCollectionType() { return "rotators";}
+
 }

@@ -50,7 +50,7 @@ public class LoggerService {
      */
     public void start() {
         if (started) return;
-        String[] collections = {"loggers","aggregators","persisters","archivers","extractors","rotators"};
+        String[] collections = {"loggers","aggregators","persisters","archivers","extractors","rotators","cleaners"};
         Arrays.stream(collections).forEach(this::startCronjobs);
         this.started = true;
     }
