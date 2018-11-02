@@ -19,5 +19,6 @@ public interface ICronjobTask {
     void setLastStartTime(Long lastStartTime);
     HashMap<String,Object> getTaskInfo();
     Object getLastRecord();
+    long getLastRecordTimestamp();
     String getCollectionType();
 }

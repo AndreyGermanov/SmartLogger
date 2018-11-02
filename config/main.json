@@ -7,5 +7,11 @@
   "statusPath": "status",
   "cachePath": "cache",
   "logPath": "logs",
-  "webservers": "#include webservers/webservers.json"
+  "webservers": "#include webservers/webservers.json",
+  "syslog": {
+    "rotateLogs": true,
+    "maxLogFileSize": 2024,
+    "maxLogFiles": 5,
+    "compressArchives": true
+  }
 }

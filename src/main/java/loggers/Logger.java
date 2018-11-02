@@ -222,6 +222,12 @@ public abstract class Logger extends CronjobTask implements ILogger,Cloneable, S
         return getJson(lastRecord);
     }
 
+    @Override
+    public long getLastRecordTimestamp() {
+        if (lastRecord == null || !lastRecord.containsKey("timestamp")) return 0L;
+        return Long.parseLong(lastRecord.get("timestamp").toString());
+    }
+
     /**
      * Method used to write provided record to file in JSON format
      * @param record: Input record

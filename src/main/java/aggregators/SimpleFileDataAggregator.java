@@ -152,6 +152,14 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
         aggregate = markRecord(startDate,aggregate);
         syslog.log(ISyslog.LogLevel.DEBUG,"Aggregator '"+this.name+"' created record "+aggregate.toString(),
                 this.getClass().getName(),"aggregate");
+        writeRecord(aggregate);
+    }
+
+    /**
+     * Method used to write aggregate record to file
+     * @param aggregate Record to write
+     */
+    private void writeRecord(HashMap<String,Object> aggregate) {
         Path path = Paths.get(getRecordPath(aggregate));
         try {
             if (!Files.exists(path.getParent())) Files.createDirectories(path.getParent());
@@ -375,6 +383,12 @@ public class SimpleFileDataAggregator extends DataAggregator implements Syslog.L
     public String getLastRecordString() {
         if (lastRecord == null) return null;
         return (new Gson()).toJson(lastRecord);
+    }
+
+    @Override
+    public long getLastRecordTimestamp() {
+        if (lastRecord == null || !lastRecord.containsKey("timestamp")) return 0L;
+        return Long.parseLong(lastRecord.get("timestamp").toString());
     }
 
     /**

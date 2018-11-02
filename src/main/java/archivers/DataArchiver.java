@@ -9,8 +9,6 @@ import main.ISyslog;
 import main.LoggerApplication;
 import main.Syslog;
 import utils.DataMap;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -295,6 +293,12 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
         return lastFileTimestamp.toString()+" "+lastFileName;
     }
 
+    @Override
+    public long getLastRecordTimestamp() {
+        if (lastFileTimestamp<=0) return 0L;
+        return lastFileTimestamp;
+    }
+
     /**
      * Method used to get destination path which will be used to archive provided source file
      * @param file Path to source file
@@ -309,6 +313,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
      * Method, which Timer used to run this object as a Cronjob ("TimerTask" implementation)
      */
     public void run() {
+        super.run();
         archive();
         setTaskStatus(CronjobTaskStatus.IDLE);
         setLastExecTime(Instant.now().getEpochSecond());

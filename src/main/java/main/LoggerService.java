@@ -3,11 +3,14 @@ package main;
 import aggregators.SimpleFileDataAggregator;
 import archivers.DataArchiver;
 import archivers.ZipArchiveExtractor;
+import cleaners.DataCleaner;
 import config.ConfigManager;
 import cronjobs.Cronjob;
 import cronjobs.ICronjobTask;
 import db.persisters.FileDatabasePersister;
 import loggers.Logger;
+import rotators.FileRotator;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,7 +50,7 @@ public class LoggerService {
      */
     public void start() {
         if (started) return;
-        String[] collections = {"loggers","aggregators","persisters","archivers","extractors"};
+        String[] collections = {"loggers","aggregators","persisters","archivers","extractors","rotators"};
         Arrays.stream(collections).forEach(this::startCronjobs);
         this.started = true;
     }
@@ -76,9 +79,7 @@ public class LoggerService {
      */
     private Cronjob createCronjob(String collectionType, String objectName) {
         HashMap<String,Object> objectConfig =  configManager.getConfigNode(collectionType,objectName);
-        int pollPeriod = Double.valueOf(objectConfig.getOrDefault("pollPeriod",0).toString()).intValue();
-        boolean enabled = Boolean.valueOf(objectConfig.getOrDefault("enabled","true").toString());
-        if (pollPeriod == 0 || !enabled) return null;
+        int pollPeriod = Double.valueOf(objectConfig.getOrDefault("pollPeriod",5).toString()).intValue();
         ICronjobTask task = createCronjobTask(collectionType,objectConfig);
         if (task == null) return null;
         return new Cronjob(task,pollPeriod);
@@ -102,6 +103,10 @@ public class LoggerService {
                 return DataArchiver.create(objectConfig);
             case "extractors":
                 return new ZipArchiveExtractor(objectConfig);
+            case "rotators":
+                return new FileRotator(objectConfig);
+            case "cleaners":
+                return new DataCleaner(objectConfig);
             default:
                 return null;
         }

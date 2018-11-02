@@ -165,6 +165,12 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
         return gson.toJson(lastRecord);
     }
 
+    @Override
+    public long getLastRecordTimestamp() {
+        if (lastRecord == null || !lastRecord.containsKey("timestamp")) return 0L;
+        return Long.parseLong(lastRecord.get("timestamp").toString());
+    }
+
     /**
      * Method used to get string value of last record from status file, parse it and setup
      */

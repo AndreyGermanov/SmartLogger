@@ -27,7 +27,7 @@ public class WebServer implements IWebServer {
     // Configuration of routes, which webserver can serve
     private HashMap<String,Object> routes = new HashMap<>();
 
-    private HashMap<String,Object> syslogConfig;
+    private HashMap<String,Object> syslogConfig = new HashMap<>();
 
     /**
      * Class constructors
