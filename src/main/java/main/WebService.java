@@ -98,8 +98,8 @@ public class WebService {
             controllers.get("controller").handleRequest(url,webServer,ctx);
             return;
         }
-        controllers.entrySet().stream().forEach(controller -> {
-            controller.getValue().handleRequest(url,webServer,ctx);
+        controllers.values().stream().forEach(controller -> {
+            controller.handleRequest(url,webServer,ctx);
         });
     }
 }

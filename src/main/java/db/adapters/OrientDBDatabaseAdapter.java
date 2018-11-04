@@ -185,4 +185,9 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
         // Returns object as a String
         public String toString() {return "URL: "+url+",BODY="+body;}
     }
+
+    public ArrayList<HashMap<String,Object>> select(String sql) {
+        if (mode == WorkMode.jdbc) return super.select(sql);
+        return null;
+    }
 }

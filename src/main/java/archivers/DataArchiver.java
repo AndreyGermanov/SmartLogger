@@ -149,7 +149,7 @@ public abstract class DataArchiver extends CronjobTask implements IDataArchiver,
     /**
      * Method used to get string value of last record from status file, parse it and setup
      */
-    private void readAndSetLastRecord() {
+    public void readAndSetLastRecord() {
         String record = readLastRecord();
         if (record == null || record.isEmpty()) return;
         try {

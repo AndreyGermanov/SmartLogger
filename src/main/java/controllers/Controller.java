@@ -1,5 +1,6 @@
 package controllers;
 
+import authenticators.IRequestAuthenticator;
 import com.google.gson.Gson;
 import io.javalin.Context;
 import main.LoggerService;
@@ -27,6 +28,10 @@ public class Controller implements IController {
      */
     @Override
     public void handleRequest(String route, IWebServer webServer, Context ctx) {
+        IRequestAuthenticator auth = webServer.getAuthenticator(route);
+
+        if (auth != null && !auth.authenticate(ctx)) {sendUnauthResponse(ctx,webServer);return;}
+
         switch (ctx.req.getMethod()) {
             case "GET": this.handleGetRequest(route,webServer,ctx);break;
             case "POST": this.handlePostRequest(route,webServer,ctx);break;
@@ -40,7 +45,7 @@ public class Controller implements IController {
      * @param ctx HTTP request context
      * @param message String message
      */
-    protected void sendErrorResponse(Context ctx,String message) {
+    protected void sendErrorResponse(Context ctx,IWebServer webServer,String message) {
         ctx.res.setStatus(500);
         HashMap<String,Object> response = DataMap.create("status","error");
         if (!message.isEmpty()) response.put("message",message);
@@ -52,8 +57,16 @@ public class Controller implements IController {
      * Uniform method to send error responses to calling HTTP client
      * @param ctx HTTP request context
      */
-    protected void sendErrorResponse(Context ctx) {
-        this.sendErrorResponse(ctx,"");
+    protected void sendErrorResponse(Context ctx, IWebServer webServer) {
+        this.sendErrorResponse(ctx,webServer,"");
+    }
+
+    protected void sendUnauthResponse(Context ctx, IWebServer webserver) {
+        try {
+            ctx.res.sendError(403);
+        } catch (Exception e) {
+            webserver.getSyslog().logException(e,this.getClass().getName(),"sendUnauthResponse");
+        }
     }
 
 
@@ -62,7 +75,7 @@ public class Controller implements IController {
      * @param ctx HTTP request context
      * @param result Data to send to calling client
      */
-    protected void sendSuccessResponse(Context ctx, Object result) {
+    protected void sendSuccessResponse(Context ctx, IWebServer webServer, Object result) {
         ctx.res.setStatus(200);
         ctx.result(gson.toJson(DataMap.create("status","ok","result", result)));
     }

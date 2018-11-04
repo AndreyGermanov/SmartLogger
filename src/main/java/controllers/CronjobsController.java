@@ -46,15 +46,15 @@ public class CronjobsController extends Controller {
     private void actionGetLastRecord(IWebServer webServer, Context ctx) {
         String cronjob_id = ctx.pathParam("cronjob_id");
         if (cronjob_id.isEmpty()) {
-            sendErrorResponse(ctx,"Cronjob ID not specified");
+            sendErrorResponse(ctx,webServer,"Cronjob ID not specified");
             return;
         }
         ICronjobTask cronjob = loggerService.getCronjobTask(cronjob_id);
         if (cronjob == null) {
-            sendErrorResponse(ctx,"Cronjob with specified ID not found");
+            sendErrorResponse(ctx,webServer,"Cronjob with specified ID not found");
             return;
         }
-        sendSuccessResponse(ctx,cronjob.getLastRecord());
+        sendSuccessResponse(ctx,webServer,cronjob.getLastRecord());
     }
 
     /**
@@ -69,16 +69,16 @@ public class CronjobsController extends Controller {
         if (enableString.equals("0")) enable = false;
         if (enableString.equals("1")) enable = true;
         if (enable == null) {
-            sendErrorResponse(ctx, "Incorrect action value");
+            sendErrorResponse(ctx, webServer,"Incorrect action value");
             return;
         }
         ICronjobTask task = LoggerService.getInstance().getCronjobTask(cronjob_id);
         if (task == null) {
-            sendErrorResponse(ctx,"Cronjob with specified ID not found");
+            sendErrorResponse(ctx,webServer,"Cronjob with specified ID not found");
             return;
         }
         task.setEnabled(enable);
-        sendSuccessResponse(ctx,null);
+        sendSuccessResponse(ctx,webServer,null);
     }
 
     /**
@@ -87,7 +87,7 @@ public class CronjobsController extends Controller {
      * @param ctx Request context
      */
     public void actionGetCronjobTypes(IWebServer webServer, Context ctx) {
-        sendSuccessResponse(ctx,LoggerService.getInstance().getCronjobTypes());
+        sendSuccessResponse(ctx,webServer,LoggerService.getInstance().getCronjobTypes());
     }
 
     /**

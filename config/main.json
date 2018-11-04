@@ -13,5 +13,15 @@
     "maxLogFileSize": 2024,
     "maxLogFiles": 5,
     "compressArchives": true
+  },
+  "archivers": {
+    "yandex_weather_golubitskaya_10_zip": {
+      "name": "yandex_weather_golubitskaya_10_zip",
+      "enabled": true,
+      "pollPeriod": 60,
+      "type": "data_zip",
+      "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_10",
+      "destinationPath": "/home/andrey/weatherGeather/work/cache/archivers/yandex_weather_golubitskaya_10"
+    }
   }
 }

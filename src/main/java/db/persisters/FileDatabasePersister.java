@@ -178,7 +178,7 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
     /**
      * Method used to get string value of last record from status file, parse it and setup
      */
-    protected void readAndSetLastRecord() {
+    public void readAndSetLastRecord() {
         String result = readLastRecord();
         if (result == null) {
             lastRecord = null;

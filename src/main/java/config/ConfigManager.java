@@ -61,6 +61,10 @@ public class ConfigManager implements ISyslog.Loggable {
         }
     }
 
+    public void loadConfig(HashMap<String,Object> config) {
+        this.config = config;
+    }
+
     /**
      * Method defines default empty configuration, if no configuration found on disk
      * @return HashMap with default configuration object

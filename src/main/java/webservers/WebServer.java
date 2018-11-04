@@ -1,5 +1,7 @@
 package webservers;
 
+import authenticators.IRequestAuthenticator;
+import authenticators.RequestAuthenticator;
 import io.javalin.Javalin;
 import main.ISyslog;
 import main.LoggerApplication;
@@ -29,6 +31,10 @@ public class WebServer implements IWebServer {
 
     private HashMap<String,Object> syslogConfig = new HashMap<>();
 
+    private HashMap<String,Object> urls = new HashMap<>();
+
+    private IRequestAuthenticator authenticator = null;
+
     /**
      * Class constructors
      */
@@ -55,6 +61,7 @@ public class WebServer implements IWebServer {
             syslogConfig = (HashMap<String,Object>)config.getOrDefault("syslog",
                     LoggerApplication.getInstance().getSyslogConfig());
         } catch (Exception e) {e.printStackTrace();}
+        authenticator = RequestAuthenticator.get(config.getOrDefault("authenticator","").toString());
     }
 
     /**
@@ -69,6 +76,7 @@ public class WebServer implements IWebServer {
             HashMap<String,Object> route = (HashMap<String,Object>)routeEntry.getValue();
             String url = route.getOrDefault("url","").toString();
             if (url.isEmpty()) return;
+            urls.put(url,route.clone());
             String requestMethod = route.getOrDefault("method","GET").toString();
             switch (requestMethod) {
                 case "GET": app.get(url,ctx -> webService.handleRequest(route,this,ctx));break;
@@ -95,6 +103,14 @@ public class WebServer implements IWebServer {
         });
         app.get("/", ctx -> ctx.result("Server '"+name+"' is listening on port "+port));
         if (routes.size()>0) initRoutes(routes);
+    }
+
+    @Override
+    public IRequestAuthenticator getAuthenticator(String url) {
+        if (urls.get("url") == null || !(urls.get("url") instanceof HashMap<?,?>)) return null;
+        HashMap<String,Object> routeConfig = (HashMap<String,Object>)urls.get(url);
+        if (routeConfig.get("authenticator") == null) return this.authenticator;
+        return RequestAuthenticator.get(routeConfig.getOrDefault("authenticator","").toString());
     }
 
     /**

@@ -51,7 +51,7 @@ public class DataCleaner extends CronjobTask implements IDataCleaner, ISyslog.Lo
      * @param config: Configuration object
      */
     public void configure(HashMap<String,Object> config) {
-        if (config == null || !config.containsKey("filePath") ) return;
+        if (config == null || !config.containsKey("sourcePath") ) return;
         super.configure(config);
         name = config.getOrDefault("name",name).toString();
         sourcePath = Paths.get(config.getOrDefault("sourcePath",sourcePath).toString());
