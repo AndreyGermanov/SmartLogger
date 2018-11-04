@@ -6,6 +6,7 @@ import main.LoggerApplication;
 import main.Syslog;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Base class for database adapters
@@ -124,12 +125,33 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
      * @return Configuration object as HashMap
      */
     HashMap<String,Object> getFieldConfig(String collectionName,String fieldName) {
+        HashMap<String,Object> fields = getCollectionFieldsConfig(collectionName);
+        if (fields == null || !(fields instanceof  HashMap<?,?>)|| !fields.containsKey(fieldName)) return null;
+        return (HashMap<String,Object>)fields.get(fieldName);
+    }
+
+    /**
+     * Method returns path of Collection configuration, related to fields of collection
+     * @param collectionName Name of collection
+     * @return HashMap with config related to fields
+     */
+    HashMap<String,Object> getCollectionFieldsConfig(String collectionName) {
         HashMap<String,Object> collection = getCollectionConfig(collectionName);
         if (collection == null || !collection.containsKey("fields") ||
                 !(collection.get("fields") instanceof HashMap<?,?>)) return null;
-        HashMap<String,Object> fields = (HashMap<String,Object>)collection.get("fields");
-        if (!fields.containsKey(fieldName) || !(collection.get("fields") instanceof HashMap<?,?>)) return null;
-        return (HashMap<String,Object>)fields.get(fieldName);
+        return (HashMap<String,Object>)collection.get("fields");
+    }
+
+    /**
+     * Method returns list of field names in collection
+     * @param collectionName Name of collection
+     * @return Set of feild names
+     */
+    Set<String> getCollectionFields(String collectionName) {
+        HashMap<String,Object> fields = getCollectionFieldsConfig(collectionName);
+        Set<String> result = fields.keySet();
+        result.remove(getIdFieldName(collectionName));
+        return result;
     }
 
     /**
@@ -157,6 +179,37 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
         if (!fields.containsKey(indexField)) return null;
         return indexField;
     }
+
+    /**
+     * Formats value for specified field for UPDATE or INSERT query, depending on type of this field, defined
+     * in configuration file
+     * @param collectionName Name of collection
+     * @param fieldName Name of field
+     * @param value Value of field to format
+     * @return Properly formatted and escaped value to insert to SQL query line
+     */
+    Object formatFieldValue(String collectionName,String fieldName,Object value) {
+        if (!isValidFieldConfig(collectionName,fieldName)) return null;
+        if (value == null) return null;
+        String type = getFieldConfigValue(collectionName,fieldName,"type").toString();
+        try {
+            switch (type) {
+                case "decimal":
+                    return Double.valueOf(value.toString());
+                case "integer":
+                    return Integer.valueOf(value.toString());
+                case "string":
+                    return value.toString();
+            }
+        } catch (Exception e) {
+            syslog.log(ISyslog.LogLevel.WARNING,
+                    "Could not format field value '"+value+"' of field '"+fieldName+"'"+
+                            "in collection '"+collectionName+"'",
+                    this.getClass().getName(),"formatFieldValue");
+        }
+        return null;
+    }
+
 
     /**
      * Returns unique name of adapter

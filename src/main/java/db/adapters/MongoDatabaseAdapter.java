@@ -113,34 +113,4 @@ public class MongoDatabaseAdapter extends DatabaseAdapter {
         });
         return new InsertOneModel<>(result);
     }
-
-    /**
-     * Formats value for specified field for UPDATE or INSERT query, depending on type of this field, defined
-     * in configuration file
-     * @param collectionName Name of collection
-     * @param fieldName Name of field
-     * @param value Value of field to format
-     * @return Properly formatted and escaped value to insert to SQL query line
-     */
-    Object formatFieldValue(String collectionName,String fieldName,Object value) {
-        if (!isValidFieldConfig(collectionName,fieldName)) return null;
-        if (value == null) return null;
-        String type = getFieldConfigValue(collectionName,fieldName,"type").toString();
-        try {
-            switch (type) {
-                case "decimal":
-                    return Double.valueOf(value.toString());
-                case "integer":
-                    return Integer.valueOf(value.toString());
-                case "string":
-                    return value.toString();
-            }
-        } catch (Exception e) {
-            syslog.log(ISyslog.LogLevel.WARNING,
-                    "Could not format field value '"+value+"' of field '"+fieldName+"'"+
-                            "in collection '"+collectionName+"'",
-                    this.getClass().getName(),"formatFieldValue");
-        }
-        return null;
-    }
 }

@@ -73,12 +73,24 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
      * @return Set of INSERT or UPDATE query lines, delimited by ';' symbol
      */
     String prepareUpdateBatchSQL(String collectionName,ArrayList<HashMap<String,Object>> data,boolean isNew) {
-        Optional<String> result = data.stream()
+        return joinSqlLines(collectionName,data,isNew,";");
+    }
+
+    /**
+     * Method gets list of data rows to insert or update and returns concatentated
+     * string of appropriate UPDATE or INSERT statements
+     * @param collectionName Name of colleciton
+     * @param data Data array
+     * @param isNew Is it new rows (INSERT) or not (UPDATE)
+     * @param delimiter - Delimiter of SQL statements (usually ';')
+     * @return String with SQL statements delimited by delimiter
+     */
+    String joinSqlLines(String collectionName,ArrayList<HashMap<String,Object>> data,boolean isNew,String delimiter) {
+        return data.stream()
                 .filter((row) -> row.size()>0)
                 .map(row -> prepareUpdateSQL(collectionName,row,isNew))
-                .filter(string -> !string.isEmpty())
-                .reduce((s,s1) -> s+";"+s1);
-        return result.orElse("");
+                .filter(string -> string != null && !string.isEmpty())
+                .reduce((s,s1) -> s+delimiter+s1).orElse("");
     }
 
     /**
@@ -89,10 +101,7 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
      * @return
      */
     String prepareUpdateSQL(String collectionName,HashMap<String,Object> row, boolean isNew) {
-        HashMap<String,String> fields = row.keySet().stream()
-                .filter((fieldName) -> formatFieldValueForSQL(collectionName,fieldName,row.get(fieldName)) != null )
-                .collect(Collectors.toMap(fieldName -> fieldName,fieldName ->
-                     formatFieldValueForSQL(collectionName,fieldName,row.get(fieldName)),(s1,s2) -> s1,HashMap::new));
+        HashMap<String,String> fields = prepareDataForSql(collectionName,row);
         if (isNew) {
             String keys = fields.keySet().stream().reduce((s, s1) -> s+","+s1).orElse("");
             String values = fields.values().stream().reduce((s, s1) -> s+","+s1).orElse("");
@@ -104,6 +113,20 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
                 row.get(getIdFieldName(collectionName)));
         if (fieldString.isEmpty() || idValue == null) return "";
         return "UPDATE "+collectionName+" SET "+fieldString+" WHERE id="+idValue;
+    }
+
+    /**
+     * Method returns row of fields, formatted according to configuration and ready to be used in
+     * SQL statements
+     * @param collectionName Name of collection
+     * @param row Row of data
+     * @return Row of data with field values, formatted according to their types
+     */
+    HashMap<String,String> prepareDataForSql(String collectionName,HashMap<String,Object> row) {
+        return row.keySet().stream()
+                .filter((fieldName) -> formatFieldValueForSQL(collectionName,fieldName,row.get(fieldName)) != null )
+                .collect(Collectors.toMap(fieldName -> fieldName,fieldName ->
+                        formatFieldValueForSQL(collectionName,fieldName,row.get(fieldName)),(s1,s2) -> s1,HashMap::new));
     }
 
     /**

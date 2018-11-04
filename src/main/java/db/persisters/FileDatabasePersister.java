@@ -96,7 +96,11 @@ public class FileDatabasePersister extends DatabasePersister implements ISyslog.
         syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"' got data record "+data.toString(),
                 this.getClass().getName(),"persist");
         Integer insertedRowsCount = databaseAdapter.insert(collectionName,data);
-        if (insertedRowsCount==null || insertedRowsCount==0) return null;
+        if (insertedRowsCount==null || insertedRowsCount==0) {
+            syslog.log(ISyslog.LogLevel.ERROR,"Data persister '"+this.name+"' could not write data record "+data.toString(),
+                    this.getClass().getName(),"persist");
+            return null;
+        }
         syslog.log(ISyslog.LogLevel.DEBUG,"Data persister '"+this.name+"' wrote data record "+data.toString(),
                 this.getClass().getName(),"persist");
         writeLastRecord();

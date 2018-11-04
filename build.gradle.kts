@@ -19,6 +19,7 @@ dependencies {
     compile("commons-net","commons-net","3.6")
     compile("io.javalin","javalin", "2.3.0")
     compile("org.slf4j","slf4j-simple", "1.7.25")
+    compile("com.mashape.unirest","unirest-java","1.4.9")
 }
 
 configure<JavaPluginConvention> {
