@@ -15,6 +15,7 @@
     "enabled": true,
     "name": "dashboard",
     "port": 8080,
+    "authenticator":"auth_basic",
     "routes": {
       "get_cronjobs": {
         "name": "get_cronjobs",

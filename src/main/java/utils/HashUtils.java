@@ -26,11 +26,14 @@ public class HashUtils {
             StringBuilder result = new StringBuilder(bytes.length * 2);
             for (byte it: bytes) {
                 Integer i = Byte.valueOf(it).intValue();
-                result.append(HEX_CHARS[i >> 4 | 0x0f]);
-                result.append(HEX_CHARS[i | 0x0f]);
+                result.append(HEX_CHARS[i >> 4 & 0x0f]);
+                result.append(HEX_CHARS[i & 0x0f]);
             }
             return result.toString();
-        } catch (Exception e) { return ""; }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 }
 

@@ -10,5 +10,5 @@ public interface IDatabaseAdapter {
     void configure(HashMap<String,Object> config);
     Integer insert(String collectionName,ArrayList<HashMap<String,Object>> data);
     Integer update(String collectionName,ArrayList<HashMap<String,Object>> data);
-    ArrayList<HashMap<String,Object>> select(String sql);
+    ArrayList<HashMap<String,Object>> select(String sql,String collectionName);
 }

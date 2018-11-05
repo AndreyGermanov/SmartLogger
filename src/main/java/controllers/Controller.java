@@ -30,7 +30,7 @@ public class Controller implements IController {
     public void handleRequest(String route, IWebServer webServer, Context ctx) {
         IRequestAuthenticator auth = webServer.getAuthenticator(route);
 
-        if (auth != null && !auth.authenticate(ctx)) {sendUnauthResponse(ctx,webServer);return;}
+        if (auth != null && !auth.authenticate(ctx)) {auth.sendDenyResponse(ctx);return;}
 
         switch (ctx.req.getMethod()) {
             case "GET": this.handleGetRequest(route,webServer,ctx);break;
@@ -51,24 +51,6 @@ public class Controller implements IController {
         if (!message.isEmpty()) response.put("message",message);
         ctx.result(gson.toJson(response));
     }
-
-
-    /**
-     * Uniform method to send error responses to calling HTTP client
-     * @param ctx HTTP request context
-     */
-    protected void sendErrorResponse(Context ctx, IWebServer webServer) {
-        this.sendErrorResponse(ctx,webServer,"");
-    }
-
-    protected void sendUnauthResponse(Context ctx, IWebServer webserver) {
-        try {
-            ctx.res.sendError(403);
-        } catch (Exception e) {
-            webserver.getSyslog().logException(e,this.getClass().getName(),"sendUnauthResponse");
-        }
-    }
-
 
     /**
      * Uniform method to send success responses to calling HTTP client

@@ -114,7 +114,7 @@ public class MongoDatabaseAdapter extends DatabaseAdapter {
         return new InsertOneModel<>(result);
     }
 
-    public ArrayList<HashMap<String,Object>> select(String sql) {
+    public ArrayList<HashMap<String,Object>> select(String sql,String collectionName) {
         return null;
     }
 

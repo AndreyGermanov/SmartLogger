@@ -6,6 +6,7 @@ import main.LoggerApplication;
 import main.Syslog;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -62,7 +63,16 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
         this.syslog = new Syslog(this);
     }
 
-    //public abstract ArrayList<HashMap<String,Object>> select(String sql);
+    /**
+     * Public method used by consumers to select data from data source
+     * @param sql SQL query text
+     * @param collectionName Collection name to which SQL applied, or null, if more than one collection
+     *                       specified in SQL query
+     * @return Result as array of rows
+     */
+    public ArrayList<HashMap<String,Object>> select(String sql,String collectionName) {
+        return processQueryResult(executeSelectQuery(sql),collectionName);
+    }
 
     /**
      * Method used to insert set of records to specified collection in database
@@ -82,6 +92,54 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
      */
     public Integer update(String collectionName,ArrayList<HashMap<String,Object>> data) {
         return processUpdateQuery(collectionName,data,false);
+    }
+
+    /**
+     * Databases specific method to send SELECT query to server and return RAW result
+     * @param sql SQL query text
+     * @return RAW result from server
+     */
+    Object executeSelectQuery(String sql) { return null;}
+
+    /**
+     * Method used to transform RAW result of SELECT query returned by server to array of rows
+     * @param result RAW result from database server
+     * @param collectionName Name of collection queried, or null, if it was multi-table query
+     * @return Result as array of rows
+     */
+    ArrayList<HashMap<String,Object>> processQueryResult(Object result,String collectionName) {
+        ArrayList<Map<String,Object>> rawRows = parseQueryResult(result);
+        if (rawRows == null || rawRows.size()==0) return null;
+        ArrayList<HashMap<String,Object>> resultRows = new ArrayList<>();
+        for (Map<String,Object> rawRow: rawRows) {
+            HashMap<String,Object> resultRow = processQueryResultRow(rawRow,collectionName);
+            if (resultRow.size()>0) resultRows.add(resultRow);
+        }
+        return resultRows;
+    }
+
+    /**
+     * Method used to transform RAW query result to array of rows (without transofrming field values)
+     * @param result Query result to transform
+     * @return
+     */
+    ArrayList<Map<String,Object>> parseQueryResult(Object result) { return null;}
+
+    /**
+     * Method used to transform RAW row returned from database server to HashMap
+     * @param rawRow Raw row from server
+     * @param collectionName Collection to which this row belongs or nothing, if its unknown
+     * @return Row with fields, transformed to appropriate format
+     */
+    HashMap<String,Object> processQueryResultRow(Map<String,Object> rawRow, String collectionName) {
+        HashMap<String,Object> resultRow = new HashMap<>();
+        for (String key: rawRow.keySet()) {
+            Object value = rawRow.get(key);
+            if (collectionName != null)
+                value = formatFieldValue(collectionName,key,value);
+            if (value != null) resultRow.put(key,value);
+        }
+        return resultRow;
     }
 
     /**
@@ -150,7 +208,7 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
     Set<String> getCollectionFields(String collectionName) {
         HashMap<String,Object> fields = getCollectionFieldsConfig(collectionName);
         Set<String> result = fields.keySet();
-        result.remove(getIdFieldName(collectionName));
+      //  result.remove(getIdFieldName(collectionName));
         return result;
     }
 
@@ -197,7 +255,7 @@ abstract public class DatabaseAdapter implements IDatabaseAdapter, ISyslog.Logga
                 case "decimal":
                     return Double.valueOf(value.toString());
                 case "integer":
-                    return Integer.valueOf(value.toString());
+                    return Double.valueOf(value.toString()).intValue();
                 case "string":
                     return value.toString();
             }

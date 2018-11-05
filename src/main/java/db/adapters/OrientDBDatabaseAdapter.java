@@ -1,6 +1,7 @@
 package db.adapters;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.LinkedTreeMap;
 import com.mashape.unirest.http.Unirest;
 import utils.DataList;
 import utils.DataMap;
@@ -29,11 +30,12 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
      * Method used to apply configuration to data adapter
      * @param config Configuration object
      */
+    @Override
     public void configure(HashMap<String,Object> config) {
         super.configure(config);
         if (config == null) return;
         this.host = config.getOrDefault("host","").toString();
-        this.port = config.getOrDefault("port","").toString();
+        this.port = Integer.toString(Double.valueOf(config.getOrDefault("port","").toString()).intValue());
         this.username = config.getOrDefault("username","").toString();
         this.password = config.getOrDefault("password","").toString();
         this.database = config.getOrDefault("database","").toString();
@@ -45,6 +47,7 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
     /**
      * Method used to open database connection (which is previously setup adn configured)
      */
+    @Override
     void connect() {
         if (this.mode != WorkMode.jdbc) return;
         String url = "jdbc:orient:remote:"+host+":"+port+"/"+database;
@@ -65,6 +68,7 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
      * @param isNew If true, then "INSERT" data, if false then "UPDATE" data
      * @return Number of affected records
      */
+    @Override
     public Integer processUpdateQuery(String collectionName, ArrayList<HashMap<String,Object>> data, boolean isNew) {
         if (mode == WorkMode.jdbc) return super.processUpdateQuery(collectionName,data,isNew);
         String updateStatement = prepareUpdateBatchSQL(collectionName,data,isNew);
@@ -76,6 +80,7 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
      * @param updateStatement Query statement to execute
      * @return Number of affected rows
      */
+    @Override
     Integer executeUpdateQuery(Object updateStatement) {
         if (mode == WorkMode.jdbc) return executeUpdateQuery(updateStatement);
         HashMap<String,Object> options = DataMap.create("batch",true);
@@ -93,10 +98,13 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
      * @param isNew if true, then method will return INSERT queries, otherwise will return UPDATE queries
      * @return Set of INSERT or UPDATE query lines, delimited by ';' symbol
      */
+    @Override
     String prepareUpdateBatchSQL(String collectionName, ArrayList<HashMap<String,Object>> data, boolean isNew) {
         if (mode == WorkMode.jdbc) return super.prepareUpdateBatchSQL(collectionName,data,isNew);
         if (data.size() == 0) return "";
-        String keys = getCollectionFields(collectionName).stream().reduce((s, s1) -> s+","+s1).orElse("");
+        String keys = getCollectionFields(collectionName).stream()
+                .filter(key->!key.equals(getIdFieldName(collectionName)))
+                .reduce((s, s1) -> s+","+s1).orElse("");
         return (isNew ? "INSERT INTO "+collectionName+" ("+keys+") VALUES (" : "") +
                 joinSqlLines(collectionName,data,isNew,isNew ? "),(" : ";") + (isNew ? ")" : "");
     }
@@ -108,13 +116,17 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
      * @param isNew if true, then method will return INSERT query, otherwise will return UPDATE query
      * @return
      */
+    @Override
     String prepareUpdateSQL(String collectionName,HashMap<String,Object> row, boolean isNew) {
         if (mode == WorkMode.jdbc) super.prepareUpdateSQL(collectionName,row,isNew);
         HashMap<String,String> fields = prepareDataForSql(collectionName,row);
         if (fields.isEmpty()) return null;
         Set<String> keys = getCollectionFields(collectionName);
         if (isNew)
-            return keys.stream().map(key -> fields.getOrDefault(key, "null")).reduce((s, s1) -> s+","+s1).orElse("");
+            return keys.stream()
+                    .filter(key-> !key.equals(getIdFieldName(collectionName)))
+                    .map(key -> fields.getOrDefault(key, "null"))
+                    .reduce((s, s1) -> s+","+s1).orElse("");
         String fieldString = fields.keySet().stream().reduce((s,s1) -> s+"="+fields.get(s1)).orElse("");
         String idValue = formatFieldValueForSQL(collectionName,getIdFieldName(collectionName),
                 row.get(getIdFieldName(collectionName)));
@@ -136,6 +148,7 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
                         .header("Accept-Encoding","gzip,deflate")
                         .body(request.body).asString().getRawBody())).lines().reduce((s,s1) -> s+"\n"+s1).orElse("");
         } catch (Exception e) {
+            e.printStackTrace();
             syslog.logException(e,this,"execOrientDBRequest");
             return "";
         }
@@ -166,6 +179,38 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
         return result;
     }
 
+    /**
+     * Databases specific method to send SELECT query to server and return RAW result
+     * @param sql SQL query text
+     * @return RAW result from server
+     */
+    @Override
+    Object executeSelectQuery(String sql) {
+        if (mode == WorkMode.jdbc) return super.executeSelectQuery(sql);
+        try {
+            Object result = execOrientDBRequest(sql,null);
+            if (result.toString().isEmpty()) return null;
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Method used to transform RAW query result to array of rows (without transofrming field values)
+     * @param result Query result to transform
+     * @return
+     */
+    @Override
+    ArrayList<Map<String,Object>> parseQueryResult(Object result) {
+        if (result==null) return null;
+        HashMap resultJson = gson.fromJson(result.toString(),HashMap.class);
+        if (resultJson == null || !resultJson.containsKey("result")) return null;
+        ArrayList<Map<String, Object>> rawRows = (ArrayList<Map<String, Object>>) resultJson.get("result");
+        return rawRows;
+    }
+
     // Possible OrientDB server communication modes: JDBC or REST
     public enum WorkMode {jdbc,rest}
 
@@ -184,10 +229,5 @@ public class OrientDBDatabaseAdapter extends JDBCDatabaseAdapter {
         }
         // Returns object as a String
         public String toString() {return "URL: "+url+",BODY="+body;}
-    }
-
-    public ArrayList<HashMap<String,Object>> select(String sql) {
-        if (mode == WorkMode.jdbc) return super.select(sql);
-        return null;
     }
 }

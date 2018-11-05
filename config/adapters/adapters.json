@@ -1,4 +1,14 @@
 {
   "mysql_local": "#include mysql_local.json",
-  "mongodb_local": "#include mongodb_local.json"
+  "mongodb_local": "#include mongodb_local.json",
+  "orientdb_local": {
+    "name": "orientdb_local",
+    "type": "orientdb",
+    "host": "http://localhost",
+    "port": 2480,
+    "mode": "rest",
+    "database": "weather",
+    "username": "admin",
+    "password": "admin"
+  }
 }

@@ -23,5 +23,16 @@
       "sourcePath": "/home/andrey/weatherGeather/work/cache/aggregators/yandex_weather_golubitskaya_10",
       "destinationPath": "/home/andrey/weatherGeather/work/cache/archivers/yandex_weather_golubitskaya_10"
     }
+  },
+  "authenticators": {
+    "auth_basic": {
+      "name":"auth_basic",
+      "type":"basic",
+      "hashAlgo":"SHA-512",
+      "dbAdapter": "orientdb_local",
+      "authCollectionName": "users",
+      "usernameField": "login",
+      "passwordField": "password"
+    }
   }
 }

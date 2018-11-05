@@ -151,8 +151,4 @@ abstract public class JDBCDatabaseAdapter extends DatabaseAdapter {
         }
         return null;
     }
-
-    public ArrayList<HashMap<String,Object>> select(String sql) {
-        return null;
-    }
 }

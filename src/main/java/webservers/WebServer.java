@@ -107,7 +107,7 @@ public class WebServer implements IWebServer {
 
     @Override
     public IRequestAuthenticator getAuthenticator(String url) {
-        if (urls.get("url") == null || !(urls.get("url") instanceof HashMap<?,?>)) return null;
+        if (urls.get(url) == null || !(urls.get(url) instanceof HashMap<?,?>)) return null;
         HashMap<String,Object> routeConfig = (HashMap<String,Object>)urls.get(url);
         if (routeConfig.get("authenticator") == null) return this.authenticator;
         return RequestAuthenticator.get(routeConfig.getOrDefault("authenticator","").toString());

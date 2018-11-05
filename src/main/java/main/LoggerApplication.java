@@ -91,8 +91,8 @@ public class LoggerApplication {
             if (Files.notExists(errorLogPath.getParent())) Files.createDirectories(errorLogPath.getParent());
             if (Files.exists(errorLogPath)) rotateLogFile(errorLogPath);
             if (Files.exists(outputLogPath)) rotateLogFile(outputLogPath);
-            System.setErr(new PrintStream(new FileOutputStream(errorLogPath.toFile())));
-            System.setOut(new PrintStream(new FileOutputStream(outputLogPath.toFile())));
+            //System.setErr(new PrintStream(new FileOutputStream(errorLogPath.toFile())));
+            //System.setOut(new PrintStream(new FileOutputStream(outputLogPath.toFile())));
         } catch (IOException e) {
             e.printStackTrace();
         }
